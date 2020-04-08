@@ -1,0 +1,15 @@
+\begin{thebibliography}{Ich08}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Ich08]{thisdocument}
+\textsc{Ich}:
+\newblock Vorlage für das Hauptseminar.
+\newblock {In: }\emph{Diese Zeitschrift}  (2008). --
+\newblock Dieses Dokument solle sich selbst verlinken (Hilfe, Endlosrekursion!)
+   \href{././Ausarbeitung\_Vorlage.pdf}
+{\bf ./Ausarbeitung\_Vorlage.pdf}
+
+\end{thebibliography}

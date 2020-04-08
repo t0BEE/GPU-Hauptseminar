@@ -1,0 +1,221 @@
+% This is LLNCS.DEM the demonstration file of
+% the LaTeX macro package from Springer-Verlag
+\documentclass[a4paper,12pt]{llncs}
+%
+\usepackage{makeidx}  % allows for indexgeneration
+\makeindex
+
+\usepackage[ngerman]{babel}
+\usepackage[utf8]{inputenc}      % Code-Page latin 1
+\usepackage[T1]{fontenc}
+\usepackage{listings}
+% Nur eine der beiden folgenden Zeilen einbinden!
+% siehe Abschnitt Bilder
+%\usepackage{graphicx}       % Bilder einbinden, Version fuer normales latex
+\usepackage[pdftex]{graphicx}       % Bilder einbinden, Version fuer pdflatex
+
+% mit Hyperrefs
+\usepackage[pdftex, plainpages=false,hypertexnames=true,pdfnewwindow=true,backref=true,colorlinks=true,citecolor=blue,linkcolor=black,urlcolor=blue,filecolor=blue]{hyperref}%
+% weitere Packages
+\usepackage{ifthen}                 % Zum Auskommentieren von Textteilen
+\usepackage{amssymb}                % Mathematische Buchstaben
+\usepackage{amsmath}                % Verbesserter Formelsatz
+\usepackage{booktabs}               % schönere Tabellen
+\usepackage{color}
+\usepackage{hyperref}
+ \hypersetup{urlcolor=black,citecolor=black}
+\usepackage{dsfont}
+%\newtheorem{definition}{Definition}
+\usepackage{doc}
+
+% Seitenformat ===============================================================
+\hoffset=-1.25truecm
+\setlength{\topmargin}{0.0cm}
+\setlength{\textheight}{23.0cm}
+\setlength{\footskip}{1.5cm}
+\setlength{\textwidth}{15.4cm}
+\setlength{\evensidemargin}{1.5cm}
+\setlength{\oddsidemargin}{1.5cm}
+\setlength{\parskip}{1ex}
+\setlength{\parindent}{0pt}
+\setlength{\marginparwidth}{1.4cm}
+\setlength{\marginparsep}{1mm}
+
+\pagestyle{plain}
+
+% LstListing-Format ==========================================================
+\lstdefinestyle{cpp}{
+  language=C++,
+  basicstyle=\small\ttfamily,
+  frame=tb,
+  xleftmargin=\parindent,
+  keywordstyle=\color{blue},
+  stringstyle=\color{red},
+  commentstyle=\color{green},
+  morecomment=[l][\color{magenta}]{\#},
+  framexleftmargin=5pt,
+  framexrightmargin=5pt,
+  framextopmargin=5pt,
+  framexbottommargin=5pt,
+  literate={~}{$\sim$}1
+}
+
+% Makro-Definitionen ==========================================================
+% Zahlenbereiche -------------------------------------------------------------
+\newcommand{\N}{{\mathbb{N}}}
+\newcommand{\R}{{\mathbb{R}}}
+\newcommand{\C}{{\mathbb{C}}}
+\newcommand{\Z}{{\mathbb{Z}}}
+\newcommand{\Q}{{\mathbb{Q}}}
+
+%
+\def\myverzeichnis{.}
+
+\numberwithin{equation}{section}
+% Bild -----------------------------------------------------------------------
+% #1 Filename;  #2 Label;  #3 Bildunterschrift;  #4 Kurzform
+\newcommand{\bild}[4]{
+  \begin{figure}[htbp]
+    \begin{center}
+      \includegraphics{#1}
+      \caption[#4]{#3}
+      \label{#2}
+    \end{center}
+  \end{figure}
+}
+
+% Bildbreite -----------------------------------------------------------------
+% #1 Filename;  #2 Breite;  #3 Label;  #4 Bildunterschrift;  #5 Kurzform
+\newcommand{\bildbreite}[5]{
+  \begin{figure}[htbp]
+    \begin{center}
+      \includegraphics[width=#2]{#1}
+      \caption[#5]{#4}
+      \label{#3}
+    \end{center}
+  \end{figure}
+}
+
+
+% ============================================================================
+\begin{document}
+
+% =========== Das war der Vorspann, jetzt geht's los! ========================
+
+% ============================================================================
+% =============  AB HIER DARF UND SOLL GETIPPT WERDEN ========================
+% ============================================================================
+
+\author{Tobias Schiffmann}
+\index{Viel Schreiber}
+
+% Das Institut wird fuer den Betreuer missbraucht ...
+\institute{{\bf Betreuerin:} Gregor Daiß}
+\authorrunning{Viel Schreiber}
+\title{SIMT/GPGPU - CUDA \& OpenCL}
+
+\maketitle
+
+\thispagestyle{empty}
+
+\begin{abstract}
+Ein schöner Abstract. Das ist einfach die Kurzzusammenfassung.
+\end{abstract}
+
+% Einleitung -----------------------------------------------------------------
+\section{Einleitung}
+Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
+
+\subsection{Anmerkungen zur Einleitung}
+Hier kommt noch mehr Text. Wir verweisen dazu auf
+\cite{thisdocument}.
+
+Eine schöne Formel ist
+\[
+u(\vec{x}) = \sum_{i=1}^N \alpha_i \varphi_i(\vec{x}) \,,
+\]
+aber das geht auch inline als $u(\vec{x}) = \sum_{i=1}^N \alpha_i
+\varphi_i(\vec{x})$, also mitten im Text.
+
+Was noch fehlt ist ein Bild, z.B.\ das aus
+Abbildung~\ref{fig:grid1} oder Abbildung~\ref{fig:grid2}. Wir können dazu prima die tollen Makros,
+die oben im Vorspann definiert wurden, verwenden. Beispielsweise mit
+folgenden Befehlen:
+\begin{verbatim}
+\bild{figures/grid_l2_brd}{fig:grid1}{Dies ist ein sogenanntes dünnes
+Gitter zum Level 2.}{Die Kurzform lasse ich meist leer}
+\bildbreite{figures/grid_l2_brd_B}{2cm}{fig:grid2}{Dies ist ein sogenanntes dünnes
+Gitter zum Level 2 in 2cm Breite.}{}
+\end{verbatim}
+Die Bilder werden automatisch nach vernünftigen Kriterien platziert,
+daher immer im Text mit \verb!\ref{}! drauf verweisen (bei den
+Beispielen mit \verb!\ref{fig:grid1}! und \verb!\ref{fig:grid2}!).
+\bild{figures/grid_l2_brd}{fig:grid1}{Dies ist ein sogenanntes dünnes
+  Gitter zum Level 2.}{Die Kurzform lasse ich meist leer}
+\bildbreite{figures/grid_l2_brd}{2cm}{fig:grid2}{Dies ist ein sogenanntes dünnes
+Gitter zum Level 2 in 2cm Breite.}{}
+
+% Anmerkung: damit LaTeX nicht denkt, dass ein Punkt den Satz beendet
+% (da spendiert LaTeX gerne mehr Zwischenraum), können wir das
+% Leerzeichen mit Backslash als Leerzeichen markieren. Damit LaTeX
+% ein Leerzeichen setzt, bei dem es keinen Zeilenumbruch geben darf,
+% kann man die Tilde verwenden.
+Was wir hin und wieder noch brauchen ist eine Tabelle, wie z.B.\
+Tabelle~\ref{tab:irgendwas}.
+\begin{table}[htbp]
+  \centering
+  \caption{Diese Tabelle zeigt nicht die Daten von etwas Sinnvollem,
+    sondern einfach irgend etwas. Tabellenbeschriftungen sind oft drüber.}
+  \label{tab:irgendwas}
+  \begin{tabular}{lrcp{5cm}}
+    \toprule
+    \multicolumn{3}{c}{Spalten} & Absatz 5cm \\
+    \cmidrule(lr){1-3}
+    linksbündig & rechtsbündig & zentriert & \\
+    \midrule
+    1.0 & -1.1 & 1.2 & toller Text, der nach 5cm umbricht und dafür
+    brauchen wir einfach mehr Text. \\
+    4321.1 & 6543.2 & 7654.3 & mehr Text \\
+    2.44 & 4.66 & 6.88 & 8.00 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{Quellcode}
+Code-Beispiele können mittels \texttt{lstlisting}-Environment eingebunden
+werden.
+Siehe Listing~\ref{lst:mylisting} als Beispiel.
+Alternativen wie \texttt{minted} sind selbstverständlich auch erlaubt, solange
+sie Features wie Syntax-Highlighting und Zeilennummern mitbringen.
+Code-Beispiele sollten minimal sein, d.h.\ auf den Punkt gebracht und keinen
+überflüssigen Code beinhalten.
+Es muss standardkonformer Code sein und mit hinzugefügtem Boilerplate-Code
+(main, Auslassungen von Überflüssigem, \dots) ohne Fehler compilierbar sein.
+
+Quellcode aus Dateien kann per \texttt{lstinputlisting} einbezogen werden.
+Für Inline-Code \texttt{lstinline} verwenden.
+Für abstrakte Algorithmen (kein C++-Code) besser eines der algorithm-Packages
+verwenden.
+
+\begin{lstlisting}[style=cpp,caption={Example using Lstlisting},label={lst:mylisting},numbers=left]
+template <typename T>
+struct LessThan {
+  bool operator(T a, T b) { return a < b; };
+};
+
+std::vector<int> v = { 5, 4, 3, 2, 1 };
+std::sort(v.begin(), v.end(), LessThan<int>());
+\end{lstlisting}
+
+
+\subsection{Zum Schluss}
+\dots viel Spaß!
+
+% Literaturverzeichnis ------------------------------------------------
+\newpage
+\bibliographystyle{alphadinLinkLocal}
+\bibliography{literatur}
+
+%\iffalse
+\end{document}
+%\fi
