@@ -1,4 +1,4 @@
-\begin{thebibliography}{Ich08}
+\begin{thebibliography}{RR12}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
   \providecommand{\doi}[1]{doi: #1}\else
@@ -11,5 +11,13 @@
 \newblock Dieses Dokument solle sich selbst verlinken (Hilfe, Endlosrekursion!)
    \href{././Ausarbeitung\_Vorlage.pdf}
 {\bf ./Ausarbeitung\_Vorlage.pdf}
+
+\bibitem[RR12]{Rauber.2012}
+\textsc{Rauber}, Thomas ; \textsc{R{\"u}nger}, Gudula:
+\newblock \emph{Parallele Programmierung}.
+\newblock Berlin, Heidelberg : {Springer Berlin Heidelberg}, 2012.
+\newblock  \url{http://dx.doi.org/10.1007/978-3-642-13604-7}.
+\newblock  \url{http://dx.doi.org/10.1007/978-3-642-13604-7}. --
+\newblock ISBN 978--3--642--13603--0
 
 \end{thebibliography}
