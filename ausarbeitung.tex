@@ -156,13 +156,26 @@ relevant ? :
 
     
     
-  - Programmier Frameworks (CUDA / OpenCL)
+  - Programmier Frameworks (CUDA / OpenCL)	
     --> Unterschiede
     --> Beispiele
     1 beide: Program Separierung in Host-Program(CPU [IO + User]) und Device-Program (GPU)
-    1 Interaktio: Host-Programm kopiert Daten in GPU Speicher und Device Funktionen aufrufen
+    1 sollen GPU Programmierung vereinfachen
+    1 Interaktion: Host-Programm kopiert Daten in GPU Speicher und Device Funktionen aufrufen
     - CUDA
       1 NVIDIA
+      1 device program = kernel-functions/kernels
+      1 Program startet mit host-Programm bis Kernel-Funktionsaufruf -> Kernel und Host laufen parallel
+      	- Aufruf erzeugt CUDA-Threads (zusammengefasst als Grid)
+      CUDA ist nutzbar in verschiedenen PLs (C/C++/Fortran/Python)
+      1 erklärungen für C sind hier drin
+	  1 Kernelaufruf enthält \textit{execution configuration}
+	  	--> gibt die organisation der generierten Threads im Grid der Kernel-Funktion an
+	  	  - unterteile Threads des Grids in Blöcke von Threads (3-dim, blockIDx.xyz)
+	  	  - Blöcke sind in threads aufgeteilt (3-dim, threadIDx.xyz)
+	   --> jeder einzelne Thread des Grids kann aufgerufen werden eine Kernel-Funktion auszuführen      
+             
+      
     - OpenCL
       1 Mehrere partner (u.a. NVIDIA) 
       1 standardisiertes Programmiermodel
