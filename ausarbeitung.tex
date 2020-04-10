@@ -174,7 +174,15 @@ relevant ? :
 	  	  - unterteile Threads des Grids in Blöcke von Threads (3-dim, blockIDx.xyz)
 	  	  - Blöcke sind in threads aufgeteilt (3-dim, threadIDx.xyz)
 	   --> jeder einzelne Thread des Grids kann aufgerufen werden eine Kernel-Funktion auszuführen      
-             
+          - um Threads zu synchronisieren gibt es synchronisationsfunktionen nur innerhalb eines Blocks
+      1 verschiedene Speichertypen
+        - global memory(host-RW, Device-RW)
+        - constant memory (host-RW, device-R)
+        - register(nur thread kann drauf zu greifen) and shared memory(alle threads eines Blocks) (kurze Zugriffszeit)
+        --> Schaubild !! (1)
+      1 Thread Scheduling
+        - passiert nicht auf der Ebene einzelner Threads, sondern "Warps" --> mehrere Threads eines Blocks (aufsteigende threadIDx) zusammengefasst
+        - eine Instruktion nach der anderen für alle Threads eines Warps ausführen --> SIMT
       
     - OpenCL
       1 Mehrere partner (u.a. NVIDIA) 
