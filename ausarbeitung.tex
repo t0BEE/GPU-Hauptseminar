@@ -133,17 +133,7 @@ Ein schöner Abstract. Das ist einfach die Kurzzusammenfassung.
   1 Damals noch mit komplexer Programmierumgebung (DirectX / OpenGL!! G!)
   -   
 %------------------------------------------------------------------------  
-- State of Technology
-  - SIMT
-    --> Unterschied zu SIMD    
-    2 introduced here !!!
-
-relevant ? :    
-    1 Transferoperationen brauchen lange, um Wartezeit zu verdecken, einzelne Threads der Instruktion ausführen
-    1 SIMD Thread-Scheduler wählt welcher thread als nächstes ausgeführt wird
-       -> hat score board (Position der Ausführung / operanden in Register)
-       
-   
+- State of Technology 
     
   - GPU - Architektur(en)
     --> Basics des Aufbaus
@@ -154,7 +144,8 @@ relevant ? :
     (1 Fermi und Kepler architecture)
     3 Turing architecture !
 
-    
+  - SIMT
+    2 introduced here !!!
     
   - Programmier Frameworks (CUDA / OpenCL)	
     --> Unterschiede
@@ -182,11 +173,18 @@ relevant ? :
         --> Schaubild !! (1)
       1 Thread Scheduling
         - passiert nicht auf der Ebene einzelner Threads, sondern "Warps" --> mehrere Threads eines Blocks (aufsteigende threadIDx) zusammengefasst
-        - eine Instruktion nach der anderen für alle Threads eines Warps ausführen --> SIMT
+        - eine Instruktion nach der anderen für alle Threads eines Warps ausführen --> \textbf{SIMT}
+          --> Instruktionen auf verschiedenen Kontrollflüssen, wenn gleich, dann kann schnell sein
+          	Falls, unterschiedlich SIMT nur beschränkt möglich, kann sich auch bei if-else aufteilen
+        
+        
       
     - OpenCL
       1 Mehrere partner (u.a. NVIDIA) 
       1 standardisiertes Programmiermodel
+      1 heterogene zugrunde liegende Plattform muss explizit spezifiziert werden ("Kontext")
+        --> etwas komplexer als CUDA, aber Vielfalt diverser HW möglich
+      1 Work-Items (CUDA-Threads) < Work-Groups < globaler NDRanges (Grid)
 %------------------------------------------------------------------------
 - Vergleich von CUDA, OpenCL und (MIMD oder Sequentiel)
   - Beispiel für hohe Datenparallelität
