@@ -133,6 +133,8 @@ Ein schöner Abstract. Das ist einfach die Kurzzusammenfassung.
   1 Damals noch mit komplexer Programmierumgebung (DirectX / OpenGL!! G!)
   1 sollen GPU Programmierung vereinfachen
 	 --> 4 durch diese vereinfachung ist GPU programmierung zugänglicher und wird für andere Aufgaben als Grafikberechnung ausgeführt --> General Purpose GPU
+	 4 Matrix Multiplication and N-Body Problem (322 und 86 mal schneller)
+	 4 Gute Skallierbarkeit für Parallele Probleme
 	   
 %------------------------------------------------------------------------  
 - GPU - Architektur(en)
@@ -144,6 +146,7 @@ Ein schöner Abstract. Das ist einfach die Kurzzusammenfassung.
     (1 Fermi und Kepler architecture)
     3 Turing architecture !
     
+    Speichertypen aus 1 und 4 vielleicht hier hin?
 %------------------------------------------------------------------------   
   - Programmier Frameworks (CUDA / OpenCL)	
     --> beide sehr ähnlich --> erst CUDA erklären und dann Unterschiede zu OpenCL eingehen
@@ -158,14 +161,14 @@ Ein schöner Abstract. Das ist einfach die Kurzzusammenfassung.
       1 Program startet mit host-Programm bis Kernel-Funktionsaufruf -> Kernel und Host laufen parallel
       	- Aufruf erzeugt CUDA-Threads (zusammengefasst als Grid)
       CUDA ist nutzbar in verschiedenen PLs (C/C++/Fortran/Python)
-      1 erklärungen für C sind hier drin
-	  1 Kernelaufruf enthält \textit{execution configuration}
+      1+4 erklärungen für C sind hier drin
+	  1+4 Kernelaufruf enthält \textit{execution configuration}
 	  	--> gibt die organisation der generierten Threads im Grid der Kernel-Funktion an
 	  	  - unterteile Threads des Grids in Blöcke von Threads (3-dim, blockIDx.xyz)
 	  	  - Blöcke sind in threads aufgeteilt (3-dim, threadIDx.xyz)
 	   --> jeder einzelne Thread des Grids kann aufgerufen werden eine Kernel-Funktion auszuführen      
           - um Threads zu synchronisieren gibt es synchronisationsfunktionen nur innerhalb eines Blocks
-      1 verschiedene Speichertypen
+      1 + 4 verschiedene Speichertypen
         - global memory(host-RW, Device-RW)
         - constant memory (host-RW, device-R)
         - register(nur thread kann drauf zu greifen) and shared memory(alle threads eines Blocks) (kurze Zugriffszeit)
