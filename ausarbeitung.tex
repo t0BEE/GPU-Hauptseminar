@@ -110,7 +110,7 @@
 \index{Viel Schreiber}
 
 % Das Institut wird fuer den Betreuer missbraucht ...
-\institute{{\bf Betreuerin:} Gregor Daiß}
+\institute{{\bf Betreuer:} Gregor Daiß}
 \authorrunning{Viel Schreiber}
 \title{SIMT/GPGPU - CUDA \& OpenCL}
 
@@ -131,11 +131,11 @@ Ein schöner Abstract. Das ist einfach die Kurzzusammenfassung.
     ==> heutiges Beispiel NNs
   1 sehr hoher FP-Operation durchsatz, verteilt auf große Anzahl Threads
   1 Damals noch mit komplexer Programmierumgebung (DirectX / OpenGL!! G!)
-  -   
+  1 sollen GPU Programmierung vereinfachen
+	 --> 4 durch diese vereinfachung ist GPU programmierung zugänglicher und wird für andere Aufgaben als Grafikberechnung ausgeführt --> General Purpose GPU
+	   
 %------------------------------------------------------------------------  
-- State of Technology 
-    
-  - GPU - Architektur(en)
+- GPU - Architektur(en)
     --> Basics des Aufbaus
     --> nur die neuste Architektur
     --> was verwenden Unterschiedliche Hersteller
@@ -143,16 +143,15 @@ Ein schöner Abstract. Das ist einfach die Kurzzusammenfassung.
     1 jeder SIMD Prozessor hat mehrere SIMD-Funktionseinheiten( jede hat Int und FP - Einheit)
     (1 Fermi und Kepler architecture)
     3 Turing architecture !
-
-  - SIMT
-    2 introduced here !!!
     
+%------------------------------------------------------------------------   
   - Programmier Frameworks (CUDA / OpenCL)	
-    --> Unterschiede
-    --> Beispiele
+    --> beide sehr ähnlich --> erst CUDA erklären und dann Unterschiede zu OpenCL eingehen
     1 beide: Program Separierung in Host-Program(CPU [IO + User]) und Device-Program (GPU)
-    1 sollen GPU Programmierung vereinfachen
+
+    
     1 Interaktion: Host-Programm kopiert Daten in GPU Speicher und Device Funktionen aufrufen
+    
     - CUDA
       1 NVIDIA
       1 device program = kernel-functions/kernels
@@ -177,6 +176,9 @@ Ein schöner Abstract. Das ist einfach die Kurzzusammenfassung.
           --> Instruktionen auf verschiedenen Kontrollflüssen, wenn gleich, dann kann schnell sein
           	Falls, unterschiedlich SIMT nur beschränkt möglich, kann sich auch bei if-else aufteilen
         
+        - SIMT
+          - 
+          2 introduced here !!!
         
       
     - OpenCL
@@ -186,11 +188,11 @@ Ein schöner Abstract. Das ist einfach die Kurzzusammenfassung.
         --> etwas komplexer als CUDA, aber Vielfalt diverser HW möglich
       1 Work-Items (CUDA-Threads) < Work-Groups < globaler NDRanges (Grid)
 %------------------------------------------------------------------------
-- Vergleich von CUDA, OpenCL und (MIMD oder Sequentiel)
+- Vergleich von CUDA, OpenCL und (MIMD oder Sequentiell)
   - Beispiel für hohe Datenparallelität
   	1 hier werden einige Beispiele gennant
   - Beispiel mit geringer Datenparallelität
-  --> Schaubilder für execution time aller 
+  --> Schaubilder für execution time aller Beispiele
 %------------------------------------------------------------------------
 - Conclusion / Discussion
 
@@ -198,6 +200,10 @@ Ein schöner Abstract. Das ist einfach die Kurzzusammenfassung.
 \item \cite{Rauber.2012} (1)
 \item \cite{Lindholm.2008} (2)
 \item \cite{Burgess.2020} (3)
+\item \cite{Huang.2008} (4)
+\item \cite{Bialas.2016} (5)
+\item \cite{Khronos.2019} (6)
+\item \cite{Wang.2019} (7)
 \end{enumerate}
 
 
@@ -208,7 +214,7 @@ Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod 
 
 \subsection{Anmerkungen zur Einleitung}
 Hier kommt noch mehr Text. Wir verweisen dazu auf
-\cite{thisdocument}.
+%\cite{thisdocument}.
 
 Eine schöne Formel ist
 \[

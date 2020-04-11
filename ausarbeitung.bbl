@@ -1,8 +1,20 @@
-\begin{thebibliography}{LNOM08}
+\begin{thebibliography}{HHWP08}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
   \providecommand{\doi}[1]{doi: #1}\else
   \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[BS16]{Bialas.2016}
+\textsc{Bialas}, Piotr ; \textsc{Strzelecki}, Adam:
+\newblock Benchmarking the Cost of Thread Divergence in CUDA.
+\newblock \,Version:\,2016.
+\newblock  \url{http://dx.doi.org/10.1007/978-3-319-32149-3{\textunderscore
+  }53}.
+\newblock {In: }\textsc{Wyrzykowski}, Roman (Hrsg.): \emph{Parallel processing
+  and applied mathematics. Part I} Bd. 9573.
+\newblock Switzerland : Springer, 2016, S. 570--579. --
+\newblock DOI 10.1007/978--3--319--32149--3{\textunderscore }53. --
+\newblock ISBN 978--3--319--32148--6
 
 \bibitem[Bur20]{Burgess.2020}
 \textsc{Burgess}, John:
@@ -12,13 +24,20 @@
 \newblock DOI 10.1109/MM.2020.2971677. --
 \newblock ISSN 0272--1732
 
-\bibitem[Ich08]{thisdocument}
-\textsc{Ich}:
-\newblock Vorlage für das Hauptseminar.
-\newblock {In: }\emph{Diese Zeitschrift}  (2008). --
-\newblock Dieses Dokument solle sich selbst verlinken (Hilfe, Endlosrekursion!)
-   \href{././Ausarbeitung\_Vorlage.pdf}
-{\bf ./Ausarbeitung\_Vorlage.pdf}
+\bibitem[HHWP08]{Huang.2008}
+\textsc{Huang}, Qihang ; \textsc{Huang}, Zhiyi ; \textsc{Werstein}, Paul  ;
+  \textsc{Purvis}, Martin:
+\newblock GPU as a General Purpose Computing Resource.
+\newblock {In: }\textsc{Huang}, Zhiyi (Hrsg.): \emph{Proceedings}.
+\newblock Los Alamitos Calif. : {IEEE Computer Society}, 2008. --
+\newblock ISBN 978--0--7695--3443--5, S. 151--158
+
+\bibitem[{Khr}19]{Khronos.2019}
+\textsc{{Khronos OpenCL Working Group}}:
+\newblock \emph{The OpenCL Specification}.
+\newblock
+  \url{www.khronos.org/registry/OpenCL/specs/2.2/html/OpenCL_API.html#_introduction}.
+\newblock \,Version:\,2019
 
 \bibitem[LNOM08]{Lindholm.2008}
 \textsc{Lindholm}, Erik ; \textsc{Nickolls}, John ; \textsc{Oberman}, Stuart  ;
@@ -36,5 +55,18 @@
 \newblock  \url{http://dx.doi.org/10.1007/978-3-642-13604-7}.
 \newblock  \url{http://dx.doi.org/10.1007/978-3-642-13604-7}. --
 \newblock ISBN 978--3--642--13603--0
+
+\bibitem[WGW19]{Wang.2019}
+\textsc{Wang}, Tongli ; \textsc{Guo}, Wei  ; \textsc{Wei}, Jizeng:
+\newblock An Optimization Scheme for Demosaicing Algorithm on GPU Using OpenCL.
+\newblock \,Version:\,2019.
+\newblock  \url{http://dx.doi.org/10.1007/978-981-13-5919-4{\textunderscore
+  }14}.
+\newblock {In: }\textsc{Xu}, Weixia (Hrsg.) ; \textsc{Xiao}, Liquan (Hrsg.) ;
+  \textsc{Li}, Jinwen (Hrsg.)  ; \textsc{Zhu}, Zhenzhen (Hrsg.): \emph{Computer
+  engineering and technology} Bd. 994.
+\newblock Singapore : Springer, 2019, S. 142--152. --
+\newblock DOI 10.1007/978--981--13--5919--4{\textunderscore }14. --
+\newblock ISBN 978--981--13--5918--7
 
 \end{thebibliography}
