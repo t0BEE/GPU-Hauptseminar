@@ -123,112 +123,106 @@ Ein schöner Abstract. Das ist einfach die Kurzzusammenfassung.
 \end{abstract}
 
 
-\section{Gliederung}
+\section{Motivation}
+  1 entworfen für Grafikanwendungen mit sehr großen Datenmengen\\
+    --> haben sich relativ unabhängig von CPUs entwickelt\\
+    --> im Grafikbereich: hohes Potential an Datenparallelität! --> keine Abhängigkeiten\\
+  1 sehr hoher FP-Operation durchsatz, verteilt auf große Anzahl Threads\\
+  4 interessant in anderen Anwendungsgebieten --> General Purpose GPU\\
+    
+%---------------------------------------------------------------------------------
+    
+\section{Difference between CPU and GPU}
+\subsection{GPU Architecture}
+    - Function units / architecture picture\\
+      1 multi-threaded SIMD-Prozessoren (NVIDEA: Streaming Multiprocessors [SMX]), können als unabhängige MIMD-Kerne betrachtet werden\\
+      1 jeder SIMD Prozessor hat mehrere SIMD-Funktionseinheiten( jede hat Int und FP - Einheit)\\
+	  3 Turing architecture\\
+	  - Figure \ref{fig:turingOverall} evtl in appendix\\
+	  \bildbreite{figures/Turing_architecture.JPG}{\textwidth}{fig:turingOverall}{8 Turing Architecture TU106 (RTX2070)}{}
+	  - Figure \ref{fig:smArch}
+	  \bildbreite{figures/SM_arch.jpg}{9cm}{fig:smArch}{8 SM Architecture}{}
+	  8 2 SMs per TPC (Texture Processing Cluster)
+	  8 SM is divided into 4 processing blocks
+	    - each with 16 FP32 Cores, 16 INT32 Cores, two Tensor Cores, one warp scheduler, and one dispatch unit
+	    - each block includes a new L0 instruction cache and a 64 KB register file
+	    - all share a combined 96 KB L1 data cache/shared memory.
 
-
-- Motivation
-
-- Difference between CPU and GPU
-  - Architecture
-    - Function units / architecture picture
-    - memory hierarchy
-  - Latency Hiding
-  - Thread Scheduling / Switching
-  - Examples for each in Peak Performance GFLOPS
+	  3 Tensor Core as special Deep Learning Accelerator
+	    - Matrix-Accumulate functions --> essential part in deep learning
+	  3 RTCore accelerates ray tracing
+	    - Accelerate ray probing and move it to other function units
+	    - SM can do other tasks meanwhile
+	  
+	  
+    - memory hierarchy\\
+      1 + 4 verschiedene Speichertypen\\
+        - global memory(host-RW, Device-RW)\\
+        - constant memory (host-RW, device-R)\\
+        - register(nur thread kann drauf zu greifen) and shared memory(alle threads eines Blocks) (kurze Zugriffszeit)\\
+        - Figure \ref{fig:memorga}
+    \bild{figures/speicheroragnisation.jpg}{fig:memorga}{1 Memory Organization}{}
+        
+\subsection{Latency Hiding}
+  
+\subsection{Thread Scheduling}
+        - passiert nicht auf der Ebene einzelner Threads, sondern "Warps" --> mehrere Threads eines Blocks (aufsteigende threadIDx) zusammengefasst\\
+        - eine Instruktion nach der anderen für alle Threads eines Warps ausführen --> \textbf{SIMT}\\
+        --> Instruktionen auf verschiedenen Kontrollflüssen, wenn gleich, dann kann schnell sein\\
+         	Falls, unterschiedlich SIMT nur beschränkt möglich, kann sich auch bei if-else aufteilen\\
+         
+\subsection{Performance}
+  - Examples for each in Peak Performance GFLOPS\\
     --> white papers of the products
 
-- CUDA Programming
-  --> Example
-  --> Matrix - Matrix Multiplication
-  
-- Optimization techniques
-  - increase Occupancy
-  - increase latency
-  - problems / concerns (warp divergence)
-  
-- Example in OpenCL
-  --> Differences to CUDA
+%---------------------------------------------------------------------------------
+
+\section{CUDA - A GPU Programming Model}
+      1 NVIDIA as vendor\\
+      1 program separation in host program (CPU [IO + User]) and device program (GPU)\\
+      1 device program = kernel-functions/kernels\\
+	  1 interaction: host program copies data in GPU memory and calls device function\\
+	  1 a program starts via a host program until kernel function is called -> then both run in parallel till synchronization\\
+		- Call creates CUDA- Threads (summarized as Grid)\\
+	  1+4 kernel call contains \textit{execution configuration}\\
+	    --> specifies the organization of the generated Threads in the Grid of the kernel function\\
+	  	  - unterteile Threads des Grids in Blöcke von Threads (3-dim, blockIDx.xyz)\\
+	  	  - Blöcke sind in threads aufgeteilt (3-dim, threadIDx.xyz)\\
+	   --> jeder einzelne Thread des Grids kann aufgerufen werden eine Kernel-Funktion auszuführen\\
+          - um Threads zu synchronisieren gibt es synchronisationsfunktionen nur innerhalb eines Blocks\\
+          
+  --> Example Implementation: Matrix - Matrix Multiplication
 
 
-
-
-
-
-
-%------------------------------------------------------------------------
-- Motivation / kurzer einstieg in motivation für GPUs
-  1 entworfen für Grafikanwendungen mit sehr großen Datenmengen
-    --> im Grafikbereich: hohes Potential an Datenparallelität! --> keine Abhängigkeiten
-    ==> heutiges Beispiel NNs
-  1 sehr hoher FP-Operation durchsatz, verteilt auf große Anzahl Threads
-  1 Damals noch mit komplexer Programmierumgebung (DirectX / OpenGL!! G!)
-  1 sollen GPU Programmierung vereinfachen
-	 --> 4 durch diese vereinfachung ist GPU programmierung zugänglicher und wird für andere Aufgaben als Grafikberechnung ausgeführt --> General Purpose GPU
-	 4 Matrix Multiplication and N-Body Problem (322 und 86 mal schneller)
-	 4 Gute Skallierbarkeit für Parallele Probleme
-	   
-%------------------------------------------------------------------------  
-- GPU - Architektur(en)
-    --> Basics des Aufbaus
-    --> nur die neuste Architektur
-    --> was verwenden Unterschiedliche Hersteller
-    1 multi-threaded SIMD-Prozessoren (NVIDEA: Streaming Multiprocessors [SMX]), können als unabhängige MIMD-Kerne betrachtet werden
-    1 jeder SIMD Prozessor hat mehrere SIMD-Funktionseinheiten( jede hat Int und FP - Einheit)
-    (1 Fermi und Kepler architecture)
-    3 Turing architecture !
-    
-    Speichertypen aus 1 und 4 vielleicht hier hin?
-%------------------------------------------------------------------------   
-  - Programmier Frameworks (CUDA / OpenCL)	
-    --> beide sehr ähnlich --> erst CUDA erklären und dann Unterschiede zu OpenCL eingehen
-    1 beide: Program Separierung in Host-Program(CPU [IO + User]) und Device-Program (GPU)
-
-    
-    1 Interaktion: Host-Programm kopiert Daten in GPU Speicher und Device Funktionen aufrufen
-    
-    - CUDA
-      1 NVIDIA
-      1 device program = kernel-functions/kernels
-      1 Program startet mit host-Programm bis Kernel-Funktionsaufruf -> Kernel und Host laufen parallel
-      	- Aufruf erzeugt CUDA-Threads (zusammengefasst als Grid)
-      CUDA ist nutzbar in verschiedenen PLs (C/C++/Fortran/Python)
-      1+4 erklärungen für C sind hier drin
-	  1+4 Kernelaufruf enthält \textit{execution configuration}
-	  	--> gibt die organisation der generierten Threads im Grid der Kernel-Funktion an
-	  	  - unterteile Threads des Grids in Blöcke von Threads (3-dim, blockIDx.xyz)
-	  	  - Blöcke sind in threads aufgeteilt (3-dim, threadIDx.xyz)
-	   --> jeder einzelne Thread des Grids kann aufgerufen werden eine Kernel-Funktion auszuführen      
-          - um Threads zu synchronisieren gibt es synchronisationsfunktionen nur innerhalb eines Blocks
-      1 + 4 verschiedene Speichertypen
-        - global memory(host-RW, Device-RW)
-        - constant memory (host-RW, device-R)
-        - register(nur thread kann drauf zu greifen) and shared memory(alle threads eines Blocks) (kurze Zugriffszeit)
-        --> Schaubild !! (1)
-      1 Thread Scheduling
-        - passiert nicht auf der Ebene einzelner Threads, sondern "Warps" --> mehrere Threads eines Blocks (aufsteigende threadIDx) zusammengefasst
-        - eine Instruktion nach der anderen für alle Threads eines Warps ausführen --> \textbf{SIMT}
-          --> Instruktionen auf verschiedenen Kontrollflüssen, wenn gleich, dann kann schnell sein
-          	Falls, unterschiedlich SIMT nur beschränkt möglich, kann sich auch bei if-else aufteilen
-        
-        - SIMT
-          - 
-          2 introduced here !!!
-        
+%---------------------------------------------------------------------------------
+ 
+\section{OpenCL - A Multipurpose Programming Model}
+  --> Differences to CUDA\\
+  - Terminology\\
+      1 Work-Items (CUDA-Threads) < Work-Groups < global NDRanges (Grid)\\
+  - Basic information\\
+      1 multiple partners (including NVIDIA)\\
+      1 standardized programming model\\
+      1 heterogeneous platform which needs explicit specification (Context)\\
+        --> can also be used for FPGAs\\
+        --> more complex than CUDA, but provides more diversity in HW\\
       
-    - OpenCL
-      1 Mehrere partner (u.a. NVIDIA) 
-      1 standardisiertes Programmiermodel
-      1 heterogene zugrunde liegende Plattform muss explizit spezifiziert werden ("Kontext")
-        --> etwas komplexer als CUDA, aber Vielfalt diverser HW möglich
-      1 Work-Items (CUDA-Threads) < Work-Groups < globaler NDRanges (Grid)
-%------------------------------------------------------------------------
-- Vergleich von CUDA, OpenCL und (MIMD oder Sequentiell)
-  - Beispiel für hohe Datenparallelität
-  	1 hier werden einige Beispiele gennant
-  - Beispiel mit geringer Datenparallelität
-  --> Schaubilder für execution time aller Beispiele
-%------------------------------------------------------------------------
-- Conclusion / Discussion
+
+
+%---------------------------------------------------------------------------------
+
+\section{Programming Optimization Techniques}
+  - increase Occupancy\\
+  - increase latency\\
+  - problems / concerns (warp divergence)\\
+
+
+%---------------------------------------------------------------------------------
+
+\section{Conclusion and Discussion}
+
+      
+
 
 \begin{enumerate}
 \item \cite{Rauber.2012} (1)
@@ -238,98 +232,12 @@ Ein schöner Abstract. Das ist einfach die Kurzzusammenfassung.
 \item \cite{Bialas.2016} (5)
 \item \cite{Khronos.2019} (6)
 \item \cite{Wang.2019} (7)
+\item \cite{NVIDIA.2018} (8)
 \end{enumerate}
 
 
 
-% Einleitung -----------------------------------------------------------------
-\section{Einleitung}
-Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
 
-\subsection{Anmerkungen zur Einleitung}
-Hier kommt noch mehr Text. Wir verweisen dazu auf
-%\cite{thisdocument}.
-
-Eine schöne Formel ist
-\[
-u(\vec{x}) = \sum_{i=1}^N \alpha_i \varphi_i(\vec{x}) \,,
-\]
-aber das geht auch inline als $u(\vec{x}) = \sum_{i=1}^N \alpha_i
-\varphi_i(\vec{x})$, also mitten im Text.
-
-Was noch fehlt ist ein Bild, z.B.\ das aus
-Abbildung~\ref{fig:grid1} oder Abbildung~\ref{fig:grid2}. Wir können dazu prima die tollen Makros,
-die oben im Vorspann definiert wurden, verwenden. Beispielsweise mit
-folgenden Befehlen:
-\begin{verbatim}
-\bild{figures/grid_l2_brd}{fig:grid1}{Dies ist ein sogenanntes dünnes
-Gitter zum Level 2.}{Die Kurzform lasse ich meist leer}
-\bildbreite{figures/grid_l2_brd_B}{2cm}{fig:grid2}{Dies ist ein sogenanntes dünnes
-Gitter zum Level 2 in 2cm Breite.}{}
-\end{verbatim}
-Die Bilder werden automatisch nach vernünftigen Kriterien platziert,
-daher immer im Text mit \verb!\ref{}! drauf verweisen (bei den
-Beispielen mit \verb!\ref{fig:grid1}! und \verb!\ref{fig:grid2}!).
-\bild{figures/grid_l2_brd}{fig:grid1}{Dies ist ein sogenanntes dünnes
-  Gitter zum Level 2.}{Die Kurzform lasse ich meist leer}
-\bildbreite{figures/grid_l2_brd}{2cm}{fig:grid2}{Dies ist ein sogenanntes dünnes
-Gitter zum Level 2 in 2cm Breite.}{}
-
-% Anmerkung: damit LaTeX nicht denkt, dass ein Punkt den Satz beendet
-% (da spendiert LaTeX gerne mehr Zwischenraum), können wir das
-% Leerzeichen mit Backslash als Leerzeichen markieren. Damit LaTeX
-% ein Leerzeichen setzt, bei dem es keinen Zeilenumbruch geben darf,
-% kann man die Tilde verwenden.
-Was wir hin und wieder noch brauchen ist eine Tabelle, wie z.B.\
-Tabelle~\ref{tab:irgendwas}.
-\begin{table}[htbp]
-  \centering
-  \caption{Diese Tabelle zeigt nicht die Daten von etwas Sinnvollem,
-    sondern einfach irgend etwas. Tabellenbeschriftungen sind oft drüber.}
-  \label{tab:irgendwas}
-  \begin{tabular}{lrcp{5cm}}
-    \toprule
-    \multicolumn{3}{c}{Spalten} & Absatz 5cm \\
-    \cmidrule(lr){1-3}
-    linksbündig & rechtsbündig & zentriert & \\
-    \midrule
-    1.0 & -1.1 & 1.2 & toller Text, der nach 5cm umbricht und dafür
-    brauchen wir einfach mehr Text. \\
-    4321.1 & 6543.2 & 7654.3 & mehr Text \\
-    2.44 & 4.66 & 6.88 & 8.00 \\
-    \bottomrule
-  \end{tabular}
-\end{table}
-
-\subsection{Quellcode}
-Code-Beispiele können mittels \texttt{lstlisting}-Environment eingebunden
-werden.
-Siehe Listing~\ref{lst:mylisting} als Beispiel.
-Alternativen wie \texttt{minted} sind selbstverständlich auch erlaubt, solange
-sie Features wie Syntax-Highlighting und Zeilennummern mitbringen.
-Code-Beispiele sollten minimal sein, d.h.\ auf den Punkt gebracht und keinen
-überflüssigen Code beinhalten.
-Es muss standardkonformer Code sein und mit hinzugefügtem Boilerplate-Code
-(main, Auslassungen von Überflüssigem, \dots) ohne Fehler compilierbar sein.
-
-Quellcode aus Dateien kann per \texttt{lstinputlisting} einbezogen werden.
-Für Inline-Code \texttt{lstinline} verwenden.
-Für abstrakte Algorithmen (kein C++-Code) besser eines der algorithm-Packages
-verwenden.
-
-\begin{lstlisting}[style=cpp,caption={Example using Lstlisting},label={lst:mylisting},numbers=left]
-template <typename T>
-struct LessThan {
-  bool operator(T a, T b) { return a < b; };
-};
-
-std::vector<int> v = { 5, 4, 3, 2, 1 };
-std::sort(v.begin(), v.end(), LessThan<int>());
-\end{lstlisting}
-
-
-\subsection{Zum Schluss}
-\dots viel Spaß!
 
 % Literaturverzeichnis ------------------------------------------------
 \newpage
