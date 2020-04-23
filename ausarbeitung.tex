@@ -138,21 +138,21 @@ Ein schöner Abstract. Das ist einfach die Kurzzusammenfassung.
       1 multi-threaded SIMD-Prozessoren (NVIDEA: Streaming Multiprocessors [SMX]), können als unabhängige MIMD-Kerne betrachtet werden\\
       1 jeder SIMD Prozessor hat mehrere SIMD-Funktionseinheiten( jede hat Int und FP - Einheit)\\
 	  3 Turing architecture\\
-	  - Figure \ref{fig:turingOverall} evtl in appendix\\
-	  \bildbreite{figures/Turing_architecture.JPG}{\textwidth}{fig:turingOverall}{8 Turing Architecture TU106 (RTX2070)}{}
-	  - Figure \ref{fig:smArch}
-	  \bildbreite{figures/SM_arch.jpg}{9cm}{fig:smArch}{8 SM Architecture}{}
-	  8 2 SMs per TPC (Texture Processing Cluster)
-	  8 SM is divided into 4 processing blocks
-	    - each with 16 FP32 Cores, 16 INT32 Cores, two Tensor Cores, one warp scheduler, and one dispatch unit
-	    - each block includes a new L0 instruction cache and a 64 KB register file
-	    - all share a combined 96 KB L1 data cache/shared memory.
+	  - Figure \ref{fig:turingOverall} mit Turing architecture\\
+	  \bildbreite{figures/Turing_architecture.JPG}{6cm}{fig:turingOverall}{8 Turing Architecture TU106 (RTX2070)}{}
+	  - Figure \ref{fig:smArch} SM Architecture\\
+	  \bildbreite{figures/SM_arch.jpg}{4cm}{fig:smArch}{8 SM Architecture}{}
+	  8 2 SMs per TPC (Texture Processing Cluster)\\
+	  8 SM is divided into 4 processing blocks\\
+	    - each with 16 FP32 Cores, 16 INT32 Cores, two Tensor Cores, one warp scheduler, and one dispatch unit\\
+	    - each block includes a new L0 instruction cache and a 64 KB register file\\
+	    - all share a combined 96 KB L1 data cache/shared memory.\\
 
-	  3 Tensor Core as special Deep Learning Accelerator
-	    - Matrix-Accumulate functions --> essential part in deep learning
-	  3 RTCore accelerates ray tracing
-	    - Accelerate ray probing and move it to other function units
-	    - SM can do other tasks meanwhile
+	  3 Tensor Core as special Deep Learning Accelerator\\
+	    - Matrix-Accumulate functions --> essential part in deep learning\\
+	  3 RTCore accelerates ray tracing\\
+	    - Accelerate ray probing and move it to other function units\\
+	    - SM can do other tasks meanwhile\\
 	  
 	  
     - memory hierarchy\\
@@ -166,14 +166,39 @@ Ein schöner Abstract. Das ist einfach die Kurzzusammenfassung.
 \subsection{Latency Hiding}
   
 \subsection{Thread Scheduling}
-        - passiert nicht auf der Ebene einzelner Threads, sondern "Warps" --> mehrere Threads eines Blocks (aufsteigende threadIDx) zusammengefasst\\
-        - eine Instruktion nach der anderen für alle Threads eines Warps ausführen --> \textbf{SIMT}\\
-        --> Instruktionen auf verschiedenen Kontrollflüssen, wenn gleich, dann kann schnell sein\\
-         	Falls, unterschiedlich SIMT nur beschränkt möglich, kann sich auch bei if-else aufteilen\\
+        1 passiert nicht auf der Ebene einzelner Threads, sondern "Warps" --> mehrere Threads eines Blocks (aufsteigende threadIDx) zusammengefasst\\
+        2 threads of a warp start at the same program address, but may diverge\\
+        1 + 2 eine Instruktion nach der anderen für alle aktiven Threads eines Warps ausführen --> \textbf{SIMT}\\
+         2 --> individual threads can be inactive due to independent branching\\
+         1+2 --> Instruktionen auf verschiedenen Kontrollflüssen, wenn gleich, dann kann schnell sein\\
+         	1 Falls, unterschiedlich SIMT nur beschränkt möglich, kann sich auch bei if-else aufteilen\\
+         	2 in case of diverge, serially execute each branch path --> reconverge is possible --> use synchronization stack to manage independent diverging and converging threads\\
+         	2 SIMD instruction controls vector of multiple data lanes together and exposes the vector width to the software, whereas a SIMT instruction controls the execution and branching behavior of one thread \\
+         	2 SIMT is only necessary to consider when programming if peak performance wants to be achieved --> SIMD needs to be explicitly declared\\
+
+        2 instruction scheduler prioritizes all ready warps in a scoreboard and selects the one with highest priority\\
+        2 the score considers warp type, instruction type and "fairness" to all warps
+
+
+(evtl. 2 thread types (vertex, geometry, pixel and compute)
+
          
 \subsection{Performance}
   - Examples for each in Peak Performance GFLOPS\\
-    --> white papers of the products
+    --> Intel Xeon Platinum 8276 Processor \\
+    --> white papers of the products --> 8
+\begin{table}[htbp]
+  \centering
+  \caption{Metric Comparison Intel Cascade Lake and NVIDIA Turing TU106}
+  \label{tab:comp}
+  \begin{tabular}{|l|c|c|c|}
+    \hline
+	\textbf{Metric} & \textbf{~Intel Cascade~} & \textbf{~Tesla P4 (Pascal)~} & \textbf{~Tesla T4 (Turing)~} \\\hline
+	Physical Cores & 28 & 2560 & 2560 \\\hline
+	Max Frequency in MHz & 4000 & 1063 & 1590 \\\hline
+	Peak FLOPS in Giga-FLOPS & & 5500 & 8100 \\\hline
+  \end{tabular}
+\end{table}
 
 %---------------------------------------------------------------------------------
 
