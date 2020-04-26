@@ -133,6 +133,17 @@ Ein schöner Abstract. Das ist einfach die Kurzzusammenfassung.
 %---------------------------------------------------------------------------------
     
 \section{Difference between CPU and GPU}
+
+  9 GPU is specialized for highly parallel computation --> graphics rendering works
+  9 more transistors are devoted to data processing than caching and flow control
+  \bildbreite{figures/GPU_CPU_Flops.JPG}{12cm}{fig:GPU_CPU}{9 CPU and GPU FLOPS Development)}{}
+    \bildbreite{figures/CPU_GPU_Arc.JPG}{9cm}{fig:GPU_CPU_Arc}{9 evtl CPU and GPU Architecture)}{}
+
+    2 parallelism can even go up to task parallelism --> SIMT
+    2 intensive floating point arithmetic
+  
+  --> show a picture of CPU architecture and the amount of cores used
+  
 \subsection{GPU Architecture}
     - Function units / architecture picture\\
       1 multi-threaded SIMD-Prozessoren (NVIDEA: Streaming Multiprocessors [SMX]), können als unabhängige MIMD-Kerne betrachtet werden\\
@@ -159,27 +170,32 @@ Ein schöner Abstract. Das ist einfach die Kurzzusammenfassung.
       1 + 4 verschiedene Speichertypen\\
         - global memory(host-RW, Device-RW)\\
         - constant memory (host-RW, device-R)\\
-        - register(nur thread kann drauf zu greifen) and shared memory(alle threads eines Blocks) (kurze Zugriffszeit)\\
+        - register (local - 2)(nur thread kann drauf zu greifen) and shared memory(alle threads eines Blocks) (kurze Zugriffszeit)\\
         - Figure \ref{fig:memorga}
     \bild{figures/speicheroragnisation.jpg}{fig:memorga}{1 Memory Organization}{}
         
 \subsection{Latency Hiding}
-  
+  1 verbergen der Speicherzugriffe durch umschalten zwischen mehrereren Threads
+  9 GPU hides memory access latencies with computation instead of avoiding memory access latencies through large data caches and flow control
+
+
 \subsection{Thread Scheduling}
-        1 passiert nicht auf der Ebene einzelner Threads, sondern "Warps" --> mehrere Threads eines Blocks (aufsteigende threadIDx) zusammengefasst\\
-        2 threads of a warp start at the same program address, but may diverge\\
-        1 + 2 eine Instruktion nach der anderen für alle aktiven Threads eines Warps ausführen --> \textbf{SIMT}\\
-         2 --> individual threads can be inactive due to independent branching\\
-         1+2 --> Instruktionen auf verschiedenen Kontrollflüssen, wenn gleich, dann kann schnell sein\\
-         	1 Falls, unterschiedlich SIMT nur beschränkt möglich, kann sich auch bei if-else aufteilen\\
-         	2 in case of diverge, serially execute each branch path --> reconverge is possible --> use synchronization stack to manage independent diverging and converging threads\\
-         	2 SIMD instruction controls vector of multiple data lanes together and exposes the vector width to the software, whereas a SIMT instruction controls the execution and branching behavior of one thread \\
-         	2 SIMT is only necessary to consider when programming if peak performance wants to be achieved --> SIMD needs to be explicitly declared\\
+    1 passiert nicht auf der Ebene einzelner Threads, sondern "Warps" --> mehrere Threads eines Blocks (aufsteigende threadIDx) zusammengefasst\\
+    2 threads of a warp start at the same program address, but may diverge\\
+    1 + 2 eine Instruktion nach der anderen für alle aktiven Threads eines Warps ausführen --> \textbf{SIMT}\\
+    2 --> individual threads can be inactive due to independent branching\\
+    1+2 --> Instruktionen auf verschiedenen Kontrollflüssen, wenn gleich, dann kann schnell sein\\
+      1 Falls, unterschiedlich SIMT nur beschränkt möglich, kann sich auch bei if-else aufteilen\\
+      2 in case of diverge, serially execute each branch path --> reconverge is possible --> use synchronization stack to manage independent diverging and converging threads\\
+      2 SIMD instruction controls vector of multiple data lanes together and exposes the vector width to the software, whereas a SIMT instruction controls the execution and branching behavior of one thread\\
+      2 SIMT is only necessary to consider when programming if peak performance wants to be achieved --> SIMD needs to be explicitly declared\\
 
-        2 instruction scheduler prioritizes all ready warps in a scoreboard and selects the one with highest priority\\
-        2 the score considers warp type, instruction type and "fairness" to all warps
+    2 instruction scheduler prioritizes all ready warps in a scoreboard and selects the one with highest priority\\
+    2 the score considers warp type, instruction type and "fairness" to all warps\\
 
-
+    2 in a thread block, fast barrier synchronization instructions to wait for writes to shared or global memory to complete before reading data\\
+    2 sequentially dependent grids use a global intergrid synchronization barrier between grids to ensure global read/write ordering\\
+   
 (evtl. 2 thread types (vertex, geometry, pixel and compute)
 
          
@@ -204,20 +220,43 @@ Ein schöner Abstract. Das ist einfach die Kurzzusammenfassung.
 
 \section{CUDA - A GPU Programming Model}
       1 NVIDIA as vendor\\
-      1 program separation in host program (CPU [IO + User]) and device program (GPU)\\
-      1 device program = kernel-functions/kernels\\
+      9 intention is to maintain a low learning curve for programmers
+      9 three core abstractions - hierarchy of thread groups, shared memories and barrier synchronization
+      1+9 program separation in host program (CPU [IO + User]) and device program (GPU)\\
+      1+9 device program = kernel-functions/kernels\\
 	  1 interaction: host program copies data in GPU memory and calls device function\\
-	  1 a program starts via a host program until kernel function is called -> then both run in parallel till synchronization\\
+	  1+9 a program starts via a host program until kernel function is called -> then both run in parallel till synchronization\\
 		- Call creates CUDA- Threads (summarized as Grid)\\
-	  1+4 kernel call contains \textit{execution configuration}\\
+	  1+9 CUDA has different declaration specifiers\\
+        - __global__ --> declare as kernel function\\
+        - __device__ --> kernel function which can only be called by other kernel functions\\
+        - __host__ --> host function (default)\\
+	  1+4 kernel call contains \textit{execution configuration}, <<<Dg, Db>>>\\
+   	    - Dg: type dim3, specifies the dimension and size of the grid\\
+   	    - Db: type dim3, specifies the dimension and size of each block\\
 	    --> specifies the organization of the generated Threads in the Grid of the kernel function\\
 	  	  - unterteile Threads des Grids in Blöcke von Threads (3-dim, blockIDx.xyz)\\
 	  	  - Blöcke sind in threads aufgeteilt (3-dim, threadIDx.xyz)\\
 	   --> jeder einzelne Thread des Grids kann aufgerufen werden eine Kernel-Funktion auszuführen\\
-          - um Threads zu synchronisieren gibt es synchronisationsfunktionen nur innerhalb eines Blocks\\
-          
-  --> Example Implementation: Matrix - Matrix Multiplication
+          - um Threads zu synchronisieren gibt es synchronisationsfunktionen nur innerhalb eines Blocks (__syncthreads())\\
+          - deshalb müssen blöcke unabhängig voneinander ausführbar sein\\
+  
+    9 device memory is allocated and deallocated by cudaMalloc() and cudaFree(), it is moved between device and host via cudaMemcpy()\\
+    
 
+  
+    2 GPU computing architecture transparently scales parallel application performance with the number of SMs and SP cores\\
+    9+2 executes on any size of GPU without recompiling --> program does not care how many processors it uses\\
+      --> problem is decomposed into independently computed blocks\\
+      --> GPU compute work distribution unit generates a stream of thread blocks and distributes them to available SMs\\
+     9+2 each kernel call dynamically creates a new grid with the right number of blocks and threads for that application\\
+
+
+
+     EVTL: 9 streams and graphs
+
+  --> Example Implementation: Matrix - Matrix Multiplication\\
+    2 nvcc compiler\\
 
 %---------------------------------------------------------------------------------
  
@@ -236,7 +275,7 @@ Ein schöner Abstract. Das ist einfach die Kurzzusammenfassung.
 
 %---------------------------------------------------------------------------------
 
-\section{Programming Optimization Techniques}
+\section{Programming Optimization and Challenges}
   - increase Occupancy\\
   - increase latency\\
   - problems / concerns (warp divergence)\\
@@ -258,6 +297,7 @@ Ein schöner Abstract. Das ist einfach die Kurzzusammenfassung.
 \item \cite{Khronos.2019} (6)
 \item \cite{Wang.2019} (7)
 \item \cite{NVIDIA.2018} (8)
+\item \cite{NVIDIA.2019} (9)
 \end{enumerate}
 
 
