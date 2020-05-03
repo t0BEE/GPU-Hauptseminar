@@ -209,7 +209,7 @@ Ein schöner Abstract. Das ist einfach die Kurzzusammenfassung.
   \label{tab:comp}
   \begin{tabular}{|l|c|c|c|}
     \hline
-	\textbf{Metric} & \textbf{~Intel Cascade~} & \textbf{~Tesla P4 (Pascal)~} & \textbf{~Tesla T4 (Turing)~} \\\hline
+	\textbf{Metric} & \textbf{~Intel (Cascade Lake)~} & \textbf{~Tesla P4 (Pascal)~} & \textbf{~Tesla T4 (Turing)~} \\\hline
 	Physical Cores & 28 & 2560 & 2560 \\\hline
 	Max Frequency in MHz & 4000 & 1063 & 1590 \\\hline
 	Peak FLOPS in Giga-FLOPS & & 5500 & 8100 \\\hline
@@ -228,9 +228,9 @@ Ein schöner Abstract. Das ist einfach die Kurzzusammenfassung.
 	  1+9 a program starts via a host program until kernel function is called -> then both run in parallel till synchronization\\
 		- Call creates CUDA- Threads (summarized as Grid)\\
 	  1+9 CUDA has different declaration specifiers\\
-        - __global__ --> declare as kernel function\\
-        - __device__ --> kernel function which can only be called by other kernel functions\\
-        - __host__ --> host function (default)\\
+        - \_\_global\_\_ --> declare as kernel function\\
+        - \_\_device\_\_ --> kernel function which can only be called by other kernel functions\\
+        - \_\_host\_\_ --> host function (default)\\
 	  1+4 kernel call contains \textit{execution configuration}, <<<Dg, Db>>>\\
    	    - Dg: type dim3, specifies the dimension and size of the grid\\
    	    - Db: type dim3, specifies the dimension and size of each block\\
@@ -238,7 +238,7 @@ Ein schöner Abstract. Das ist einfach die Kurzzusammenfassung.
 	  	  - unterteile Threads des Grids in Blöcke von Threads (3-dim, blockIDx.xyz)\\
 	  	  - Blöcke sind in threads aufgeteilt (3-dim, threadIDx.xyz)\\
 	   --> jeder einzelne Thread des Grids kann aufgerufen werden eine Kernel-Funktion auszuführen\\
-          - um Threads zu synchronisieren gibt es synchronisationsfunktionen nur innerhalb eines Blocks (__syncthreads())\\
+          - um Threads zu synchronisieren gibt es synchronisationsfunktionen nur innerhalb eines Blocks (\_\_syncthreads())\\
           - deshalb müssen blöcke unabhängig voneinander ausführbar sein\\
   
     9 device memory is allocated and deallocated by cudaMalloc() and cudaFree(), it is moved between device and host via cudaMemcpy()\\
@@ -298,6 +298,7 @@ Ein schöner Abstract. Das ist einfach die Kurzzusammenfassung.
 \item \cite{Wang.2019} (7)
 \item \cite{NVIDIA.2018} (8)
 \item \cite{NVIDIA.2019} (9)
+\item Intel Xeon 8280L
 \end{enumerate}
 
 
