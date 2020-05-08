@@ -124,25 +124,32 @@ Ein schöner Abstract. Das ist einfach die Kurzzusammenfassung.
 
 
 \section{Motivation}
-  1 entworfen für Grafikanwendungen mit sehr großen Datenmengen\\
-    --> haben sich relativ unabhängig von CPUs entwickelt\\
-    --> im Grafikbereich: hohes Potential an Datenparallelität! --> keine Abhängigkeiten\\
-  1 sehr hoher FP-Operation durchsatz, verteilt auf große Anzahl Threads\\
-  4 interessant in anderen Anwendungsgebieten --> General Purpose GPU\\
+  GPUs are increasingly used for a different fields of computing they were created originally.
+  Instead of accelerating graphical computations, they are more and more used for e.g. machine learning and mining cryptographic currencies.
+  This phenomenon is called \textit{General Purpose} GPU programming.~\cite{8363085}~\cite{Huang.2008}
+  
+    According to the authors of \cite{NVIDIA.2019} and \cite{Rauber.2012} the GPU is specialized for highly parallel computation.
+    It developed rather independent from the CPU development and focused on graphical processing.
+    This field provides huge amounts of data to process without internal dependencies.
+    Which means, the data can be processed simultaneously.
+     
+    Figure \ref{fig:GPU_CPU} shows the evolution of CPU and GPU in GFLOPS performance in the last years.
+  The GPU has significantly increased its compute power.
+  Whereas CPU enhanced rather steadily in comparison.
+   \bildbreite{figures/GPU_CPU_Flops.JPG}{12cm}{fig:GPU_CPU}{9 CPU and GPU FLOPS Development)}{}
+  
     
 %---------------------------------------------------------------------------------
     
 \section{Difference between CPU and GPU}
 
-  9 GPU is specialized for highly parallel computation --> graphics rendering works
-  9 more transistors are devoted to data processing than caching and flow control
-  \bildbreite{figures/GPU_CPU_Flops.JPG}{12cm}{fig:GPU_CPU}{9 CPU and GPU FLOPS Development)}{}
-    \bildbreite{figures/CPU_GPU_Arc.JPG}{9cm}{fig:GPU_CPU_Arc}{9 evtl CPU and GPU Architecture)}{}
-
-    2 parallelism can even go up to task parallelism --> SIMT
-    2 intensive floating point arithmetic
   
-  --> show a picture of CPU architecture and the amount of cores used
+  The GPU's high amount of compute power compared to a CPU is achieved by devoting more transistors to data processing than caching and flow control.~\cite{NVIDIA.2019}
+  Figure \ref{fig:GPU_CPU_Arc} illustrates the architectural difference between both well.
+  It shows that the amounts of cores (ALU) differ significantly.
+  However, the size of cache memory each processing unit can use individually is bigger on in a CPU.
+  \bildbreite{figures/CPU_GPU_Arc.JPG}{9cm}{fig:GPU_CPU_Arc}{9 evtl CPU and GPU Architecture)}{}
+  
   
 \subsection{GPU Architecture}
     - Function units / architecture picture\\
@@ -303,6 +310,9 @@ Ein schöner Abstract. Das ist einfach die Kurzzusammenfassung.
 
 Matrix-Matrix Multiplication
 https://www.quantstart.com/articles/Matrix-Matrix-Multiplication-on-the-GPU-with-Nvidia-CUDA/
+
+additional interisting sources:
+  https://ieeexplore.ieee.org/abstract/document/4490127
 
 
 
