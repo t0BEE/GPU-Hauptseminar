@@ -269,24 +269,28 @@ Lines\\
 
 \section{CUDA - A GPU Programming Model}
 \label{sec:CUDA}
-  CUDA is developed by NVIDIA to enable an easier way to create programs using GPU acceleration.
-  Its goal is to maintain a low learning curve for programmers.
-  
-  
-%      1 NVIDIA as vendor\\
-%      9 intention is to maintain a low learning curve for programmers
+  CUDA is a programming model developed by NVIDIA to enable an easier way to create programs using GPU acceleration.
+  Its goal is to maintain a low learning curve for programmers and abstract the hardware design of GPUs.
+  It is available for C, C++, Fortran, Python and MATLAB and provides keywords to explicitly specify parts to accelerate by the GPU in normal code.
+  These parts are called \textit{kernel functions} or kernels and together are called \textit{device program}.
+  All the parts running on the CPU are called \textit{host program} and all CUDA programs start with these.
+  The host program can move data in the GPU memory and call a kernel function to utilize GPU acceleration.
+  Device and host program then run in parallel until a synchronization or the end of the kernel function are reached.~\cite{NVIDIA.2019}~\cite{Rauber.2012}~\cite{Huang.2008}
+
+  The declaration specifier to mark a function as host function is \texttt{\_\_host\_\_}.
+  It is furthermore the default, in case no specifier is declaring a function.
+  \texttt{\_\_global\_\_} can be used to declare kernel functions.
+  These can be called from the host program and device program.
+  Whereas \texttt{\_\_device\_\_}
       
-      9 three core abstractions - hierarchy of thread groups, shared memories and barrier synchronization
-      1+9 program separation in host program (CPU [IO + User]) and device program (GPU)\\
-      1+9 device program = kernel-functions/kernels\\
-	  1 interaction: host program copies data in GPU memory and calls device function\\
-	  1+9 a program starts via a host program until kernel function is called -> then both run in parallel till synchronization\\
-		- Call creates CUDA- Threads (summarized as Grid)\\
+
 	  1+9 CUDA has different declaration specifiers\\
         - \_\_global\_\_ --> declare as kernel function\\
         - \_\_device\_\_ --> kernel function which can only be called by other kernel functions\\
         - \_\_host\_\_ --> host function (default)\\
+
 	  1+4 kernel call contains \textit{execution configuration}, <<<Dg, Db>>>\\
+	    - Call creates CUDA- Threads (summarized as Grid)\\
    	    - Dg: type dim3, specifies the dimension and size of the grid\\
    	    - Db: type dim3, specifies the dimension and size of each block\\
 	    --> specifies the organization of the generated Threads in the Grid of the kernel function\\
@@ -361,7 +365,6 @@ Lines\\
 %---------------------------------------------------------------------------------
 
 \section{Conclusion and Discussion}
-
 
 
 
