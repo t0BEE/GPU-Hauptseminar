@@ -291,6 +291,7 @@ Lines\\
   However it is possible to use less dimensions by assigning the value one to a dimension.
   Inside a grid each block can be accessed by its block ID and a thread in a block can be accessed by thread IDs.
   These can be used to assign individual tasks to each thread.
+  Each kernel call dynamically creates a new grid with the defined number of blocks and threads for that application.
   An example can be seen in listing \ref{lst:CUDA_EX}.%~\cite{Rauber.2012}~\cite{Huang.2008}
 
   To synchronize threads \texttt{\_\_syncthreads()} can be called.
@@ -322,19 +323,16 @@ Lines\\
   
       
 \subsection{Hardware Mapping}
+  CUDA scales the parallel application performance transparently to the computing architecture.
+  This means that a compiled program can be executed on any GPU size without recompiling.
+  The program does not care how many processors it uses.
+  It is composed into independently the defined blocks.
+  The GPU work distribution unit generates a stream of thread blocks and distributes these blocks to available SMs.~\cite{Lindholm.2008}~\cite{NVIDIA.2019}
   
-    2 GPU computing architecture transparently scales parallel application performance with the number of SMs and SP cores\\
-    9+2 executes on any size of GPU without recompiling --> program does not care how many processors it uses\\
-      --> problem is decomposed into independently computed blocks\\
-      --> GPU compute work distribution unit generates a stream of thread blocks and distributes them to available SMs\\
-     9+2 each kernel call dynamically creates a new grid with the right number of blocks and threads for that application\\
-
-
-
-     EVTL: 9 streams and graphs
-
-  --> Example Implementation: Matrix - Matrix Multiplication\\
-    2 nvcc compiler\\
+\subsection{Example Implementation}
+  A CUDA example implementation of a matrix matrix multiplication can be seen in listing \ref{lst:CUDA_EX}.
+  It utilizes all the learnings of this chapter.
+  The CUDA programming model uses the \textit{nvcc} compiler to generate an executable program.
 
 \begin{lstlisting}[style=cpp,caption={Kernel Function of Matrix Multiplication},label={lst:CUDA_EX},numbers=left]
 __global__ void SqMatrixMul(float* A, float* B, float* C, int N) {
