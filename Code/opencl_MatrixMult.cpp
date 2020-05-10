@@ -26,6 +26,7 @@ __global__ void SqMatrixMul(float* A, float* B, float* C, int N) {
 int main(int argc, char* argv[]){
 
 	size_t size = MATRIX_SIZE * MATRIX_SIZE * sizeof(float);
+	int dim_size = MATRIX_SIZE;
 
 	// Allocate host memory
 	float* host_A = (float*) malloc(size);
@@ -86,38 +87,77 @@ int main(int argc, char* argv[]){
 		return 1;
 	}
 
-
-
-
-//-----------------------
-	// Move the data to the devcie memory
-	cudaMemcpy(device_A, host_A, size, cudaMemcpyHostToDevice);
-	cudaMemcpy(device_B, host_B, size, cudaMemcpyHostToDevice);
-
-
-
-	// Declare the number of blocks per grid and the number of threads per block
-	// Only 1024 threads per block are allowed -> 32 * 32
-	// The dimensions for blocks in grids are maximum (2^31-1, 65535)
-	
-	if (size > 1024 * sizeof(float)){
-		dim3 threadsPerBlock(32, 32);
-		int blocks = ceil(double(MATRIX_SIZE)/double(32));
-		dim3 blocksPerGrid(blocks, blocks);
-	} else {
-		dim3 threadsPerBlock(MATRIX_SIZE, MATRIX_SIZE);
-		dim3 blocksPerGrid(1,1);
+	program = clCreateProgramWithSource(context, 1, (const char**) &KernelSource, NULL, &err);
+	if (!proram) {
+		std::cout << "Failed to create compute program!" << std::endl;
+		return EXIT_FAILURE;
 	}
-	// And invoke kernel
-	SqMatrixMul<<<blocksPerGrid,threadsPerBlock>>>(device_A, device_B, device_C, MATRIX_SIZE);
 
-	// Copy the results back to the host
-	cudaMemcpy(host_C, device_C, size, cudaMemcpyDeviceToHost);
+	// Build the progam executable
+	err = clBuildProgram(program, 0, NULL, NULL, NULL, NULL);
+	if (err != CL_SUCCESS) {
+		size_t len;
+		char buffer[2048];
+		std::cout << "Failed to build program!" << std::endl;
+		clGetProgramBuildInfo(program, device_id, CL_PROGRAM_BUILD_LOG, sizeof(buffer), buffer, &len);
+		std::cout << buffer << std::endl;
+		return EXIT_FAILURE;
+	}
 
-	// Free decive memory
-	cudaFree(device_A);
-	cudaFree(device_B);
-	cudaFree(device_C);
+	// Create the compute kernel in the program
+	kernel = clCreateKernel(program, "matrixMul", &er);
+	if (!kernel || err != CL_SUCCESS) {
+		std::cout << "Failed to create compute kernel!" << std::endl;
+		return EXIT_FAILURE;
+	}
+
+	// Allocate device memory 
+	device_A = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, size, host_A, &err);
+	device_B = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, size, host_B, &err);
+	device_C = clCreateBuffer(context, CL_MEM_READ_WRITE, size, host_C, &err);
+
+	if (!device_A || !device_B || !device_C) {
+		std::cout << "Failed to allocate device memory" << std::endl;
+		return EXIT_FAILURE;
+	}
+
+	// Launch OpenCL kernel
+	// global: number of work-items executing the function
+	// local: number of work-items making up a work-group
+	size_t localWorkSize[2], globalWorkSize[2];
+
+	err = clSetKernelArg(kernel, 0, sizeof(cl_mem), (void *) &device_A);
+	err |= clSetKernelArg(kernel, 1, sizeof(cl_mem), (void *) &device_B);
+	err |= clSetKernelArg(kernel, 2, sizeof(cl_mem), (void *) &device_C);
+	err |= clSetKernelArg(kernel, 3, sizeof(int), (void *) &dim_size);
+
+	if (err != CL_SUCCESS) {
+		std::cout << "Failed to set kernel arguments!" << std::endl;
+		return EXIT_FAILURE;
+	}
+	
+	localWorkSize[0] = 16;
+	localWorkSize[1] = 16;
+	globalWorkSize[0] = 1024;
+	globalWorkSize[1] = 1024;
+
+	err = clEnqueueNDRangeKernel(commands, kernel, 2, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
+
+	if (err != CL_SUCCESS) {
+		std::cout << "Failed to execute kernel! " << err << std::endl;
+		return EXIT_FAILURE;
+	}
+
+
+	// Retrieve result from device
+	err = clEnqueueReadBuffer(commands, device_C, CL_TRUE, 0, size, host_C, 0, NULL, NULL);
+
+	if (err != CL_SUCCESS) {
+		std::cout << "Failed to read output array! " << err << std::endl;
+		return EXIT_FAILURE;
+	}
+
+
 
 	// Free host memory
 	free(host_A);
