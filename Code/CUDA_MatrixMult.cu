@@ -1,8 +1,9 @@
 #define MATRIX_SIZE 1024
 
-#include <stdio.h>
+#include <iostream>
 #include <stdlib.h>
 #include <math.h>
+#include <chrono>
 
 
 // Kernel Function Definition
@@ -32,6 +33,7 @@ int main(int argc, char* argv[]){
 	float* host_B = (float*) malloc(size);
 	float* host_C = (float*) malloc(size);
 
+
 	// Allocate device memory
 	float* device_A;
 	cudaMalloc(&device_A, size);
@@ -43,9 +45,9 @@ int main(int argc, char* argv[]){
 	// Fill the host matrices
 	srand(42);
 
-	for(int i = 0; i < size; i++){
-		host_A[i] = (((float) rand()) * 0.7) % 10; 
-		host_B[i] = (((float) rand()) * 0.7) % 10; 
+	for(int i = 0; i < (int) (size / sizeof(float)); i++){
+		host_A[i] = fmod((float) (rand() * 0.7), 10.0); 
+		host_B[i] = fmod((float) (rand() * 0.7), 10.0); 
 	}
 
 	// Move the data to the devcie memory
@@ -53,24 +55,32 @@ int main(int argc, char* argv[]){
 	cudaMemcpy(device_B, host_B, size, cudaMemcpyHostToDevice);
 
 
-
 	// Declare the number of blocks per grid and the number of threads per block
 	// Only 1024 threads per block are allowed -> 32 * 32
 	// The dimensions for blocks in grids are maximum (2^31-1, 65535)
 	
+	dim3 threadsPerBlock(MATRIX_SIZE, MATRIX_SIZE);
+	dim3 blocksPerGrid(1,1);
+
 	if (size > 1024 * sizeof(float)){
-		dim3 threadsPerBlock(32, 32);
-		int blocks = ceil(double(MATRIX_SIZE)/double(32));
-		dim3 blocksPerGrid(blocks, blocks);
-	} else {
-		dim3 threadsPerBlock(MATRIX_SIZE, MATRIX_SIZE);
-		dim3 blocksPerGrid(1,1);
+		threadsPerBlock.x = 32;
+		threadsPerBlock.y = 32;
+		int blocks = ceil(double(MATRIX_SIZE)/double(32)); //=32
+		blocksPerGrid.x = blocks;
+		blocksPerGrid.y = blocks;
 	}
+
+	auto start = std::chrono::high_resolution_clock::now();
 	// And invoke kernel
 	SqMatrixMul<<<blocksPerGrid,threadsPerBlock>>>(device_A, device_B, device_C, MATRIX_SIZE);
 
+	auto end = std::chrono::high_resolution_clock::now();
+	auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end-start);
 	// Copy the results back to the host
 	cudaMemcpy(host_C, device_C, size, cudaMemcpyDeviceToHost);
+
+
+	std::cout << duration.count() << std::endl;
 
 	// Free decive memory
 	cudaFree(device_A);
