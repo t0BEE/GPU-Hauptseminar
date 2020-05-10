@@ -384,18 +384,41 @@ int main(int argc, char* argv[]){
 %---------------------------------------------------------------------------------
  
 \section{OpenCL - A Multipurpose Programming Model}
-  --> Differences to CUDA\\
-  - Terminology\\
-      1 Work-Items (CUDA-Threads) < Work-Groups < global NDRanges (Grid)\\
-  - Basic information\\
-      1 multiple partners (including NVIDIA)\\
-      1 standardized programming model\\
-      1 heterogeneous platform which needs explicit specification (Context)\\
-        --> can also be used for FPGAs\\
-        --> more complex than CUDA, but provides more diversity in HW\\
-      
+  OpenCL is a standardized programming model similar to CUDA.
+  In contrast OpenCL is developed by multiple hardware vendors and is not limited to GPUs.
+  It can be used for several heterogeneous platforms, e.g. FPGAs.
+  Therefore, the context has to be explicitly specified.
+  This makes OpenCL more complex than CUDA, but also enables more diversity in hardware.~\cite{Rauber.2012}
 
+  OpenCL is very similar to CUDA.
+  It also separates a program in host and device program.
+  Furthermore, it uses the same kind of memory hierarchy.
+  However, when calling a kernel function, the environment of the kernel to execute in has to be defined.
+  This includes the devices to run on, kernel objects which are the kernel functions and arguments to execute and program objects which is the executable implementing the kernel.
+  Additionally, the memory objects have to be defined.
+  These are the variables used during the kernel execution.~\cite{Khronos.2019}
+  
+  The OpenCL API enables the host to create these contexts and to interact with a device via the \textit{command-queue}.
+  Different commands can be put into the queue to execute a kernel, to transfer data or to synchronize execution.
+  Each command put in the queue starts at the \textit{queued} stage.
+  In this state it can be flushed explicitly before reaching the other five stages.
+  The next states the command passes are \textit{submitted} and \textit{ready}.
+  At this point all requirements for the command to be executed are completed.
+  The execution finally starts at the \textit{running} stage and the command is assigned to the \textit{ended} state when the execution has finished.
+  After all value updates are written to memory the command is of state \textit{complete}.
+  
+  Furthermore, in OpenCL kernel functions are not defined in the main fail.
+  They are defined in additional files which are loaded by \texttt{LoadOpenCLKernel()}, created and built by \texttt{clCreateProgramWithSource()} and \texttt{clBuildProgram()}.
+  Listing \ref{lst:OpenCL} shows an example implementation.
+    
+  There are some differences in terminology, too.
+  CUDA's threads are called \textit{work-items}, blocks are \textit{work-groups} and grids are named \textit{global NDRanges}.
+  Additionally it introduces new objects, e.g. \texttt{cl\_mem} which is used for device memory.
+  
+  
+\begin{lstlisting}[style=cpp,caption={Kernel Function of Matrix Multiplication},label={lst:OpenCL},numbers=left]
 
+\end{lstlisting}
 %---------------------------------------------------------------------------------
 
 \section{Programming Optimization and Challenges}
@@ -410,23 +433,12 @@ int main(int argc, char* argv[]){
 
 
 
-\begin{enumerate}
-\item \cite{Rauber.2012} (1)
-\item \cite{Lindholm.2008} (2)
-\item \cite{Burgess.2020} (3)
-\item \cite{Huang.2008} (4)
-\item \cite{Bialas.2016} (5)
-\item \cite{Khronos.2019} (6)
-\item \cite{Wang.2019} (7)
-\item \cite{NVIDIA.2018} (8)
-\item \cite{NVIDIA.2019} (9)
-\item Intel Xeon 8280L
-\end{enumerate}
 
-Matrix-Matrix Multiplication
-https://www.quantstart.com/articles/Matrix-Matrix-Multiplication-on-the-GPU-with-Nvidia-CUDA/
+Matrix-Matrix Multiplication\\
+https://www.quantstart.com/articles/Matrix-Matrix-Multiplication-on-the-GPU-with-Nvidia-CUDA/\\
+http://www.es.ele.tue.nl/~mwijtvliet/5KK73/?page=mmopencl\\
 
-additional interisting sources:
+additional interisting sources:\\
   https://ieeexplore.ieee.org/abstract/document/4490127
 
 
