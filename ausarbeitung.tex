@@ -281,49 +281,46 @@ Lines\\
   It is furthermore the default, in case no specifier is declaring a function.
   \texttt{\_\_global\_\_} can be used to declare kernel functions.
   These can be called from the host program and device program.
-  Whereas \texttt{\_\_device\_\_}
-      
+  Whereas \texttt{\_\_device\_\_} is used to declare kernel functions which are only callable by other kernel functions.
+  When calling a kernel function the call has to contain an \textit{execution configuration} of structure \(<<<D_{g}, D_{b}>>>\).
+  It specifies how many threads are used to execute the kernel function.
+  Each of them executes the kernel function by its own.
+  \(D_b\) tells the kernel how many threads build a block and \(D_g\) furthermore how many blocks form a grid.
+  CUDA uses an own data type to do so --- \texttt{dim3}.
+  This data type contains three integer values specifying the size of x, y and z dimension.
+  However it is possible to use less dimensions by assigning the value one to a dimension.
+  Inside a grid each block can be accessed by its block ID and a thread in a block can be accessed by thread IDs.
+  These can be used to assign individual tasks to each thread.
+  An example can be seen in listing \ref{lst:CUDA_EX}.%~\cite{Rauber.2012}~\cite{Huang.2008}
 
-	  1+9 CUDA has different declaration specifiers\\
-        - \_\_global\_\_ --> declare as kernel function\\
-        - \_\_device\_\_ --> kernel function which can only be called by other kernel functions\\
-        - \_\_host\_\_ --> host function (default)\\
+  To synchronize threads \texttt{\_\_syncthreads()} can be called.
+  However, thread synchronization is only possible within a block.
+  Therefore it necessary to design the program to execute each block independent from each other.%~\cite{Rauber.2012}~\cite{Huang.2008}
 
-	  1+4 kernel call contains \textit{execution configuration}, <<<Dg, Db>>>\\
-	    - Call creates CUDA- Threads (summarized as Grid)\\
-   	    - Dg: type dim3, specifies the dimension and size of the grid\\
-   	    - Db: type dim3, specifies the dimension and size of each block\\
-	    --> specifies the organization of the generated Threads in the Grid of the kernel function\\
-	  	  - unterteile Threads des Grids in Blöcke von Threads (3-dim, blockIDx.xyz)\\
-	  	  - Blöcke sind in threads aufgeteilt (3-dim, threadIDx.xyz)\\
-	   --> jeder einzelne Thread des Grids kann aufgerufen werden eine Kernel-Funktion auszuführen\\
-          - um Threads zu synchronisieren gibt es synchronisationsfunktionen nur innerhalb eines Blocks (\_\_syncthreads())\\
-          - deshalb müssen blöcke unabhängig voneinander ausführbar sein\\
-  
-    9 device memory is allocated and deallocated by cudaMalloc() and cudaFree(), it is moved between device and host via cudaMemcpy()\\
     
 \subsection{Memory Hierarchy}
 \label{subsec:MemHi}
   Another important aspect to consider when it comes to GPU programming is memory hierarchy.
   A GPU uses different types of memory with different accessibilities and sizes.
   Firstly, there are the global memory and the constant memory.
-  They are shared across all SMs in a device.
+  They are shared across all blocks of a kernel function.
   However, both differ in accessibility.
   The host, which is the CPU making use of GPU acceleration, can access both via read and write operations to provide data to use.
-  In contrast to that the GPU, also known as device, 
-  
-    
-    ~\cite{Rauber.2012}~\cite{Huang.2008}
-	  
-    - memory hierarchy\\
-      1 + 4 verschiedene Speichertypen\\
-        - global memory(host-RW, Device-RW)\\
-        - constant memory (host-RW, device-R)\\
-        - register (local - 2)(nur thread kann drauf zu greifen) and shared memory(alle threads eines Blocks) (kurze Zugriffszeit)\\
+  In contrast to that the GPU, also known as device, can only access the global memory by read and write.
+  Constant memory can only be accessed by the device via read.
+  Shared memory has a short access time compared to the previous mentioned memory types and is used by all threads of a block.
+  Finally, the registers are local to each thread and have the shortest access time.
+  Only the thread owning the registers can access them.~\cite{Rauber.2012}~\cite{Huang.2008}
      
-  Figure \ref{fig:memorga} shows how the memory hierarchy looks like inside of a GPU. 
-  \bild{figures/speicheroragnisation.jpg}{fig:memorga}{GPU Memory Organization~\cite{Rauber.2012}}{}
+  Figure \ref{fig:memorga} shows how the memory hierarchy looks like and how each level of memory can be accessed.
+  The host can allocate device memory by \texttt{cudaMalloc()} and deallocate by \texttt{cudaFree()}.
+  Data can the be moved by the host via \texttt{cudaMemcpy()}.
+  The direction of the copy is specified by the last parameter of the function.
+  An example for memory transfer can be seen in listing \ref{lst:CUDA_EX}.
   
+  \bildbreite{figures/speicheroragnisation.jpg}{8cm}{fig:memorga}{GPU Memory Organization~\cite{Rauber.2012}}{}
+  
+      
 \subsection{Hardware Mapping}
   
     2 GPU computing architecture transparently scales parallel application performance with the number of SMs and SP cores\\
@@ -338,6 +335,53 @@ Lines\\
 
   --> Example Implementation: Matrix - Matrix Multiplication\\
     2 nvcc compiler\\
+
+\begin{lstlisting}[style=cpp,caption={Kernel Function of Matrix Multiplication},label={lst:CUDA_EX},numbers=left]
+__global__ void SqMatrixMul(float* A, float* B, float* C, int N) {
+
+        int ROW = blockIdx.y * blockDim.y + threadIdx.y;
+        int COL = blockIdx.x * blockDim.x + threadIdx.x;
+        float cell_sum = 0.0;
+
+        if (ROW < N && COL < N) {
+                for(int i = 0; i < N; i++){
+                        cell_sum += A[ROW * N + i] * B[i * N + COL];
+                }
+                C[ROW * N + COL] = cell_sum;
+        }
+}
+
+int main(int argc, char* argv[]){
+        size_t size = MATRIX_SIZE * MATRIX_SIZE * sizeof(float);
+        
+        float* host_A = (float*) malloc(size);
+        float* host_B = (float*) malloc(size);
+        float* host_C = (float*) malloc(size);
+
+
+        float* device_A;
+        cudaMalloc(&device_A, size);
+        float* device_B;
+        cudaMalloc(&device_B, size);
+        float* device_C;
+        cudaMalloc(&device_C, size);
+
+        cudaMemcpy(device_A, host_A, size, cudaMemcpyHostToDevice);
+        cudaMemcpy(device_B, host_B, size, cudaMemcpyHostToDevice);
+
+        SqMatrixMul<<<blocksPerGrid,threadsPerBlock>>>(device_A, 
+        			device_B, device_C, MATRIX_SIZE);
+       
+        cudaMemcpy(host_C, device_C, size, cudaMemcpyDeviceToHost);
+
+        cudaFree(device_A);
+        cudaFree(device_B);
+        cudaFree(device_C);
+
+}
+\end{lstlisting}
+
+
 
 %---------------------------------------------------------------------------------
  

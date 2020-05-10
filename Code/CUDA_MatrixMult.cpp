@@ -23,7 +23,7 @@ __global__ void SqMatrixMul(float* A, float* B, float* C, int N) {
 	}
 }
 
-int main(){
+int main(int argc, char* argv[]){
 
 	size_t size = MATRIX_SIZE * MATRIX_SIZE * sizeof(float);
 
