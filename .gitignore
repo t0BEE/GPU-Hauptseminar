@@ -3,4 +3,6 @@ ausarbeitung*
 !ausarbeitung.tex
 *.out
 *.csv
+*.py
+Code/Pipfile*
 

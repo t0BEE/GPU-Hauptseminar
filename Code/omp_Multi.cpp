@@ -50,7 +50,7 @@ int main(int argc, char* argv[]){
 
 	
 
-	std::cout << duration.count() << std::endl;
+	std::cout << "0," << duration.count()<< ",0" << std::endl;
 	if (argc > 1) {
 		std::cerr << "A[0][0]:" << A[0] << " , B[0][0]:" << B[0] << " ,C[0][0]:" << C[0] << std::endl;
 		std::cerr << "A[0][453]:" << A[453] << " , B[0][521]:" << B[521] << " ,C[0][1000]:" << C[1000] << std::endl;
