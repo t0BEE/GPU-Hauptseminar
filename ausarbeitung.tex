@@ -410,6 +410,9 @@ int main(int argc, char* argv[]){
   Furthermore, in OpenCL kernel functions are not defined in the main fail.
   They are defined in additional files which are loaded by \texttt{LoadOpenCLKernel()}, created and built by \texttt{clCreateProgramWithSource()} and \texttt{clBuildProgram()}.
   Listing \ref{lst:OpenCL} shows an example implementation.
+  The kernel function implementation differs only slightly.
+  Therefore, only the host program is shown.
+  It can be seen that the host program is more complex than it's CUDA counterpart.
     
   There are some differences in terminology, too.
   CUDA's threads are called \textit{work-items}, blocks are \textit{work-groups} and grids are named \textit{global NDRanges}.
@@ -417,6 +420,53 @@ int main(int argc, char* argv[]){
   
   
 \begin{lstlisting}[style=cpp,caption={Kernel Function of Matrix Multiplication},label={lst:OpenCL},numbers=left]
+// Allocate device memory
+cl_mem device_A;
+cl_mem device_B;
+cl_mem device_C;
+
+cl_uint device_cnt = 0;
+clGetPlatformIDs(0, 0, &device_cnt);
+
+cl_platform_id platform_ids[100];
+clGetPlatformIDs(device_cnt, platform_ids, NULL);
+
+// Connect to compute device
+int gpu = 1;
+err = clGetDeviceIDs(platform_ids[0], gpu ? CL_DEVICE_TYPE_GPU : CL_DEVICE_TYPE_CPU, 1, &device_id, NULL);
+
+// Create a compute context
+context = clCreateContext(0, 1, &device_id, NULL, NULL, &err);
+
+// Create a command queue
+commands = clCreateCommandQueue(context, device_id, 0, &err);
+
+// Create the compute program from source file
+long lFileSize;
+char* KernelSource = readKernelFile("kernel.cl", &lFileSize);
+
+program = clCreateProgramWithSource(context, 1, (const char**) &KernelSource, NULL, &err);
+
+// Build the progam executable
+err = clBuildProgram(program, 0, NULL, NULL, NULL, NULL);
+
+// Create the compute kernel in the program
+kernel = clCreateKernel(program, "matrixMul", &err);
+
+// Allocate device memory
+device_A = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, size, host_A, &err);
+device_B = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, size, host_B, &err);
+device_C = clCreateBuffer(context, CL_MEM_READ_WRITE, size, host_C, &err);
+
+err = clSetKernelArg(kernel, 0, sizeof(cl_mem), (void *) &device_A);
+err |= clSetKernelArg(kernel, 1, sizeof(cl_mem), (void *) &device_B);
+err |= clSetKernelArg(kernel, 2, sizeof(cl_mem), (void *) &device_C);
+err |= clSetKernelArg(kernel, 3, sizeof(int), (void *) &dim_size);
+
+localWorkSize[0] = 32;
+localWorkSize[1] = 32;
+globalWorkSize[0] = 1024;
+globalWorkSize[1] = 1024;
 
 \end{lstlisting}
 %---------------------------------------------------------------------------------
