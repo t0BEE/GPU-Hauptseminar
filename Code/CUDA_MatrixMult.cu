@@ -34,6 +34,17 @@ int main(int argc, char* argv[]){
 	float* host_C = (float*) malloc(size);
 
 
+	// Fill the host matrices
+	srand(42);
+
+	for(int i = 0; i < (int) (size / sizeof(float)); i++){
+		host_A[i] = fmod(((float) rand()) * 0.7, 10.0); 
+		host_B[i] = fmod(((float) rand()) * 0.7, 10.0); 
+	}
+
+
+	auto start_overhead = std::chrono::high_resolution_clock::now();
+
 	// Allocate device memory
 	float* device_A;
 	cudaMalloc(&device_A, size);
@@ -41,14 +52,6 @@ int main(int argc, char* argv[]){
 	cudaMalloc(&device_B, size);
 	float* device_C;
 	cudaMalloc(&device_C, size);
-
-	// Fill the host matrices
-	srand(42);
-
-	for(int i = 0; i < (int) (size / sizeof(float)); i++){
-		host_A[i] = fmod((float) (rand() * 0.7), 10.0); 
-		host_B[i] = fmod((float) (rand() * 0.7), 10.0); 
-	}
 
 	// Move the data to the devcie memory
 	cudaMemcpy(device_A, host_A, size, cudaMemcpyHostToDevice);
@@ -69,6 +72,8 @@ int main(int argc, char* argv[]){
 		blocksPerGrid.x = blocks;
 		blocksPerGrid.y = blocks;
 	}
+	auto end_overhead = std::chrono::high_resolution_clock::now();
+	auto duration_memover = std::chrono::duration_cast<std::chrono::microseconds>(end_overhead-start_overhead);
 
 	auto start = std::chrono::high_resolution_clock::now();
 	// And invoke kernel
@@ -76,16 +81,27 @@ int main(int argc, char* argv[]){
 
 	auto end = std::chrono::high_resolution_clock::now();
 	auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end-start);
+
+	
+	start_overhead = std::chrono::high_resolution_clock::now();
 	// Copy the results back to the host
 	cudaMemcpy(host_C, device_C, size, cudaMemcpyDeviceToHost);
-
-
-	std::cout << duration.count() << std::endl;
 
 	// Free decive memory
 	cudaFree(device_A);
 	cudaFree(device_B);
 	cudaFree(device_C);
+
+	end_overhead = std::chrono::high_resolution_clock::now();
+	auto dur_free = std::chrono::duration_cast<std::chrono::microseconds>(end_overhead-start_overhead);
+
+	std::cout << duration_memover.count() << "," << duration.count() << "," << dur_free.count() << std::endl;
+
+
+	if (argc > 1) {
+		std::cerr << "A[0][0]:" << host_A[0] << " , B[0][0]:" << host_B[0] << " ,C[0][0]:" << host_C[0] << std::endl;
+		std::cerr << "A[0][453]:" << host_A[453] << " , B[0][521]:" << host_B[521] << " ,C[0][1000]:" << host_C[1000] << std::endl;
+	}
 
 	// Free host memory
 	free(host_A);

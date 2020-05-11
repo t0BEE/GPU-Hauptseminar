@@ -1,53 +1,69 @@
 #define MATRIX_SIZE 1024
 
-#include <stdio.h>
+#include <iostream>
 #include <stdlib.h>
 #include <math.h>
+#include <CL/cl.hpp>
+#include <chrono>
 
 
-// Kernel Function Definition
-// Pass the matrices as arrays
-__global__ void SqMatrixMul(float* A, float* B, float* C, int N) {
-
-	int ROW = blockIdx.y * blockDim.y + threadIdx.y;
-	int COL = blockIdx.x * blockDim.x + threadIdx.x;
-	float cell_sum = 0.0;
-
-	// In case the Number of threads does not match the matrix size
-	// some threads will skip the work
-	if (ROW < N && COL < N) {
-		for(int i = 0; i < N; i++){
-			cell_sum += A[ROW * N + i] * B[i * N + COL]; 
-		}
-		C[ROW * N + COL] = cell_sum;
+char* readKernelFile(const char* filename, long* _size) {
+	FILE* file = fopen(filename, "r");
+	if (!file) {
+		std::cout << "Failed to open kernel file" << std::endl;
+		exit(1);
 	}
+
+	fseek(file, 0, SEEK_END);
+	long size = ftell(file);
+	rewind(file);
+
+	char* source = (char*) malloc((size+1) * sizeof(char));
+	fread(source, 1, size * sizeof(char), file);
+	source[size] = '\0';
+	fclose(file);
+
+	*_size = (size+1);
+	return source;
 }
+
 
 int main(int argc, char* argv[]){
 
+
+	cl_int err;
+	cl_context context = 0;
+	cl_device_id device_id = 0;
+	cl_command_queue commands = 0;
+	cl_program program = NULL;
+	cl_kernel kernel = NULL;
+
 	size_t size = MATRIX_SIZE * MATRIX_SIZE * sizeof(float);
 	int dim_size = MATRIX_SIZE;
+
 
 	// Allocate host memory
 	float* host_A = (float*) malloc(size);
 	float* host_B = (float*) malloc(size);
 	float* host_C = (float*) malloc(size);
 
+	// Fill the host matrices
+	srand(42);
+
+	for(int i = 0; i < (int) (size / sizeof(float)); i++){
+		host_A[i] = fmod(((float) rand()) * 0.7, 10.0); 
+		host_B[i] = fmod(((float) rand()) * 0.7, 10.0); 
+	}
+
+	auto start_overhead = std::chrono::high_resolution_clock::now();
+
 	// Allocate device memory
 	cl_mem device_A;
 	cl_mem device_B;
 	cl_mem device_C;
 
-	// Fill the host matrices
-	srand(42);
 
-	for(int i = 0; i < size; i++){
-		host_A[i] = (((float) rand()) * 0.7) % 10; 
-		host_B[i] = (((float) rand()) * 0.7) % 10; 
-	}
-
-
-	cl_unit device_cnt = 0;
+	cl_uint device_cnt = 0;
 	clGetPlatformIDs(0, 0, &device_cnt);
 
 	cl_platform_id platform_ids[100];
@@ -58,7 +74,7 @@ int main(int argc, char* argv[]){
 	err = clGetDeviceIDs(platform_ids[0], gpu ? CL_DEVICE_TYPE_GPU : CL_DEVICE_TYPE_CPU, 1, &device_id, NULL);
 
 	if (err != CL_SUCCESS) {
-		sdt::cout << "Failed to create a device group!" << std::endl;
+		std::cout << "Failed to create a device group!" << std::endl;
 		return EXIT_FAILURE;
 	}
 
@@ -81,14 +97,14 @@ int main(int argc, char* argv[]){
 	char* KernelSource;
 	long lFileSize;
 
-	lFileSize = LoadOpenCLKernel("matrixmul_kernel.cl", &KernelSource, false);
+	KernelSource = readKernelFile("kernel.cl", &lFileSize);
 	if (lFileSize < 0L) {
 		std::cout << "File reading failed!" << std::endl;
 		return 1;
 	}
 
 	program = clCreateProgramWithSource(context, 1, (const char**) &KernelSource, NULL, &err);
-	if (!proram) {
+	if (!program) {
 		std::cout << "Failed to create compute program!" << std::endl;
 		return EXIT_FAILURE;
 	}
@@ -105,7 +121,7 @@ int main(int argc, char* argv[]){
 	}
 
 	// Create the compute kernel in the program
-	kernel = clCreateKernel(program, "matrixMul", &er);
+	kernel = clCreateKernel(program, "matrixMul", &err);
 	if (!kernel || err != CL_SUCCESS) {
 		std::cout << "Failed to create compute kernel!" << std::endl;
 		return EXIT_FAILURE;
@@ -121,6 +137,11 @@ int main(int argc, char* argv[]){
 		return EXIT_FAILURE;
 	}
 
+
+	auto end_overhead = std::chrono::high_resolution_clock::now();
+	auto duration_memover = std::chrono::duration_cast<std::chrono::microseconds>(end_overhead-start_overhead);
+
+	auto start = std::chrono::high_resolution_clock::now();
 	// Launch OpenCL kernel
 	// global: number of work-items executing the function
 	// local: number of work-items making up a work-group
@@ -136,8 +157,8 @@ int main(int argc, char* argv[]){
 		return EXIT_FAILURE;
 	}
 	
-	localWorkSize[0] = 16;
-	localWorkSize[1] = 16;
+	localWorkSize[0] = 32;
+	localWorkSize[1] = 32;
 	globalWorkSize[0] = 1024;
 	globalWorkSize[1] = 1024;
 
@@ -148,7 +169,10 @@ int main(int argc, char* argv[]){
 		return EXIT_FAILURE;
 	}
 
+	auto end = std::chrono::high_resolution_clock::now();
+	auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end-start);
 
+	start_overhead = std::chrono::high_resolution_clock::now();
 	// Retrieve result from device
 	err = clEnqueueReadBuffer(commands, device_C, CL_TRUE, 0, size, host_C, 0, NULL, NULL);
 
@@ -156,9 +180,16 @@ int main(int argc, char* argv[]){
 		std::cout << "Failed to read output array! " << err << std::endl;
 		return EXIT_FAILURE;
 	}
+	
+	end_overhead = std::chrono::high_resolution_clock::now();
+        auto dur_free = std::chrono::duration_cast<std::chrono::microseconds>(end_overhead-start_overhead);
 
+        std::cout << duration_memover.count() << "," << duration.count() << "," << dur_free.count() << std::endl;
 
-
+	if (argc > 1) {
+		std::cerr << "A[0][0]:" << host_A[0] << " , B[0][0]:" << host_B[0] << " ,C[0][0]:" << host_C[0] << std::endl;
+		std::cerr << "A[0][453]:" << host_A[453] << " , B[0][521]:" << host_B[521] << " ,C[0][1000]:" << host_C[1000] << std::endl;
+	}
 	// Free host memory
 	free(host_A);
 	free(host_B);
