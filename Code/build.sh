@@ -8,7 +8,7 @@ g++ omp_Multi.cpp -fopenmp -O3 -o parallel.out
 
 echo "initTime,execTime,retrieveTime" > results_seq.csv
 echo "initTime,execTime,retrieveTime" > results_omp.csv
-echo "initTime,cpyTime,execTime,retrieveTime" > results_CUDA.csv
+echo "initTime,cpyTime,execTime,retrieveTime" > results_cuda.csv
 echo "initTime,cpyTime,execTime,retrieveTime" > results_ocl.csv
 
 runs=500

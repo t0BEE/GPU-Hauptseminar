@@ -28,12 +28,6 @@ int main(int argc, char* argv[]){
 
 	size_t size = MATRIX_SIZE * MATRIX_SIZE * sizeof(float);
 
-	// init timer
-	auto start, end, duration_memcpy, duration_calc, duration_alloc, duration_free;
-
-	//  ------------------- Allocation -------------------
-	start = std::chrono::high_resolution_clock::now();
-
 	// Allocate host memory
 	float* host_A = (float*) malloc(size);
 	float* host_B = (float*) malloc(size);
@@ -46,6 +40,9 @@ int main(int argc, char* argv[]){
 		host_A[i] = fmod(((float) rand()) * 0.7, 10.0); 
 		host_B[i] = fmod(((float) rand()) * 0.7, 10.0); 
 	}
+
+	//  ------------------- Allocation -------------------
+	auto start = std::chrono::high_resolution_clock::now();
 
 	// Allocate device memory
 	float* device_A;
@@ -70,8 +67,8 @@ int main(int argc, char* argv[]){
 		blocksPerGrid.y = blocks;
 	}
 	 
-	end = std::chrono::high_resolution_clock::now();
-	duration_alloc = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+	auto end = std::chrono::high_resolution_clock::now();
+	auto duration_alloc = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
 
 	//  ------------------- Memory Copy -------------------
 	start = std::chrono::high_resolution_clock::now();
@@ -80,7 +77,7 @@ int main(int argc, char* argv[]){
 	cudaMemcpy(device_B, host_B, size, cudaMemcpyHostToDevice);
 
 	end = std::chrono::high_resolution_clock::now();
-	duration_memcpy = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+	auto duration_memcpy = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
 
 
 	//  ------------------- Calculation -------------------
@@ -89,7 +86,7 @@ int main(int argc, char* argv[]){
 	SqMatrixMul<<<blocksPerGrid,threadsPerBlock>>>(device_A, device_B, device_C, MATRIX_SIZE);
 
 	end = std::chrono::high_resolution_clock::now();
-	duration_calc = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+	auto duration_calc = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
 
 	
 	//  ------------------- Recopy Data -------------------
@@ -102,8 +99,8 @@ int main(int argc, char* argv[]){
 	cudaFree(device_B);
 	cudaFree(device_C);
 
-	end_overhead = std::chrono::high_resolution_clock::now();
-	duration_free = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+	end = std::chrono::high_resolution_clock::now();
+	auto duration_free = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
 
 	std::cout << duration_alloc.count() << "," << duration_memcpy.count() << "," << duration_calc.count() << "," << duration_free.count() << std::endl;
 
