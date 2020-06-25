@@ -1,6 +1,7 @@
 ausarbeitung*
-
-!ausarbeitung.tex
+!*.tex
+sections/
+!sections/*.tex
 *.out
 *.csv
 *.py
