@@ -8,7 +8,7 @@ g++ omp_Multi.cpp -fopenmp -O3 -o parallel.out
 
 echo "initTime,execTime,retrieveTime" > results.csv
 
-runs=50
+runs=100
 
 for i in $(seq 1 ${runs})
 do
