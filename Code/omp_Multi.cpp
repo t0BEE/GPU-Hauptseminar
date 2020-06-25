@@ -28,6 +28,8 @@ int main(int argc, char* argv[]){
 
 
 	float cell_sum;
+	omp_set_dynamic(0);
+	omp_set_num_threads(6);
 	auto start = std::chrono::high_resolution_clock::now();
 
 	// Multiply Matrix
