@@ -1,0 +1,115 @@
+\section{Difference between CPU and GPU} 
+  The GPU's high amount of compute power is achieved by devoting more transistors to data processing than caching and flow control compared to a CPU.~\cite{NVIDIA.2019}
+  Figure \ref{fig:GPU_CPU_Arc} well illustrates the architectural difference between both in a less detailed way.
+  It shows that the amounts of cores differ significantly.
+  In the figure they are labeled by ALU and displayed in green.
+  However, the size of cache memory each processing unit can use individually is bigger on a CPU.
+  \bildbreite{figures/CPU_GPU_Arc.JPG}{7cm}{fig:GPU_CPU_Arc}{Differences Between CPU and GPU Architecture~\cite{NVIDIA.2019}}{}
+  
+  
+\subsection{GPU Architecture}
+\label{subsec:GPU_Arc}
+  A GPU has several multi-threaded single instruction multiple data (SIMD) processors.
+  In an NVIDIA architecture they are called \textit{Streaming Multiprocessors (SM)}.
+  Each of them has multiple processing units for integer and floating point operations. ~\cite{Rauber.2012}
+
+  The newest GPU architecture from NVIDIA is the \textit{Turing} architecture and can be seen in figure \ref{fig:turingOverall}.
+  The example layout \textit{TU106} of a NVIDIA RTX2070 GPU has three Graphic Processing Clusters (GPC), 18 Texture Processing Clusters (TPC) and 36 SMs.~\cite{NVIDIA.2018}
+  	  \bildbreite{figures/Turing_architecture.JPG}{\textwidth}{fig:turingOverall}{8 Turing Architecture TU106 (RTX2070)}{}
+  	  
+  GPCs are self-contained units designed for scalability.
+  Creating a new architecture with more processing units can be achieved by adding GPCs.
+  For instance the TU102 architecture uses 6 GPCs.
+  Each GPC has six TPCs which coordinate the work balancing among their SMs.
+  SMs are grouped in pairs and each group is assigned to one TPC.~\cite{Lindholm.2008}~\cite{NVIDIA.2018}
+    
+  A SM contains four identical blocks.
+  Each of them contains 16 integer cores for integer calculations, 16 floating point cores for decimal computation and two Tensor cores to accelerate deep learning.
+  It is a special core speeding up a matrix-accumulation function which is an essential part of deep learning model calculation.
+  Additionally, each block has its own warp scheduler and dispatch unit for job preparation.
+  Inside a block an instruction cache and a register file are placed which are shared among all units inside a block.
+  Furthermore, all blocks can access a data cache together which allows data movement across the blocks.
+  Figure \ref{fig:smArch} shows the architecture of a SM in detail including all blocks and cores.~\cite{Burgess.2020}~\cite{NVIDIA.2018}
+	  \bildbreite{figures/SM_arch.jpg}{6cm}{fig:smArch}{8 SM Architecture}{}
+
+  The figure additionally shows, that a SM has a newly added feature --- the \textit{RTCore}.
+  It accelerates ray tracing computation which is used in video game and graphics programming.
+  The ray probing task is moved to this function unit and the SM's cores are free to do other tasks in the meanwhile.
+  
+ Another important thing to mention is memory hierarchy.
+ Figure \ref{fig:turingOverall} and \ref{fig:smArch} not only show the processing units inside a GPU.
+ They furthermore illustrate the different levels of memory in GPU hardware.
+ Different levels of caches can be seen which differ in size and access time.
+ The biggest one is the L2 cache on GPC level with 4096 KB.
+ All SMs in the GPU can access it which allows communication and data share across them.
+ However, this cache is also the slowest, when it comes to access time.
+ In comparison the L1 cache allows faster data access and it enables data sharing inside a SM.
+ Blocks of other SMs cannot access it. 
+ It's size is only 96 KB.
+ The lowest level of memory are the registers.
+ They can only be accessed inside a SM block and have a size of 64 KB.
+ However, the registers provide the fastest way to access data.~\cite{Huang.2008}~\cite{NVIDIA.2019}
+        
+
+
+\subsection{Thread Scheduling}
+\label{subsec:Thr}
+  In contrast to CPUs, GPUs do not schedule threads individually.
+  Instead, they are scheduled in groups --- so called \textit{warps}.
+  These groups of threads execute the same program.
+  This means they start at the same program address and an instruction of a program is completed by all threads of a warp.
+  This type of execution model is called \textit{Single Instruction Multiple Threads (SIMT)}.
+  However, multiple threads or a single one may diverge from the other threads due to control flows inside the program, e.g. an if-else statement asking for individual thread IDs.
+  In case some threads diverge, each control flow is processed by the group of threads following the control flow.
+  If one of these control flows is executed, the threads of the other control flow are inactive and have to wait in the meanwhile.
+  This means that the less diverging occurs during execution, the faster the program can be completed.
+  However, it is important to mention that multiple diverged control flows can converge again into one.
+  The schedulers synchronization stack is used to manage independent diverging and converging.~\cite{Rauber.2012}~\cite{Lindholm.2008}
+
+  This is a significant difference to Single Instruction Multiple Data (SIMD) which does not allow diverging control flows.
+  SIMD instructions have to be explicitly defined by the programmer and they control a vector of fixed length.
+  In contrast to that SIMT instructions manage the execution and control path of a thread.
+  %SIMT does only need to be considered while programming in case performance wants to be increased further.
+  
+  To schedule a warp of threads the scheduler prioritizes all warps which are ready to be processed in a scoreboard.
+  The warp with the highest priority will be scheduled next and processed.
+  The priority score considers, e.g. instruction type and "fairness" to all warps.
+  There is also the possibility to explicitly synchronize threads by barriers.~\cite{Lindholm.2008}
+
+         
+\subsection{Latency Hiding}
+  GPUs can use the thread scheduling methods introduced in subsection \ref{subsec:Thr} to hide the long memory access latency.
+  Especially, for the highest level of memory as introduced in subsection \ref{subsec:GPU_Arc}.
+  Switching between threads and avoiding stall compute cycles, allows to maximize processor utilization.
+  In case a warp wants to access the memory, it calls such a function and goes into idle state.
+  The scheduler has the chance now to switch to another ready thread from his scoreboard which will be computed then.
+  Therefore, GPUs hide memory access latency by computation instead of caches, e.g. used by CPUs.~\cite{volkov.2016}~\cite{Rauber.2012}~\cite{NVIDIA.2019}
+  
+  
+\subsection{Performance}
+  Finally, we will have a look at the actual numbers of performance of GPU and CPU and we will be able to compare them.
+  Table \ref{tab:comp} shows the number of physical cores, maximum frequency and peak FLOPS of two GPUs and one CPU.
+  The example CPU is an Intel Xeon Platinum 8280 utilizing the Cascade Lake architecture.
+  The GPUs are a NVIDIA Tesla P4 of Pascal architecture and a NVIDIA Tesla T4 having the new Turing architecture.
+  To calculate the peak performance of a CPU the clock rate has to be multiplied by the number of cores and the number of AVX512 FMA units.
+  Then the number of floats fitting into an AVX512 register, which is equal to 16, has to be multiplied by the result.
+  Single precision is used as switching to double precision does not scale as well on GPUs as for CPUs.
+  Finally, the result has to be multiplied by two, as FMA calculation allows a multiply and an addition per clock.
+  \[2.7 * 28 * 2 * 16 * 2 \approx 4838\]
+  For this equation the optimistic frequency for all cores utilizing AVX instructions are used --- \(2.7\) GHz.\footnote{www.microway.com/knowledge-center-articles/detailed-specifications-of-the-cascade-lake-sp-intel-xeon-processor-scalable-family-cpus (accessed 09.05.2020)}
+  However, this frequency might vary due to thermal issues forcing the CPU to reduce its frequency.
+  As the frequency is of scale GHz the result is 4838 GFLOPS.
+  The metrics for the GPUs are retrieved from \cite{NVIDIA.2018}.
+  
+\begin{table}[htbp]
+  \centering
+  \caption{Metric Comparison Intel Cascade Lake and NVIDIA Turing TU106}
+  \label{tab:comp}
+  \begin{tabular}{|l|c|c|c|}
+    \hline
+	\textbf{Metric} & \textbf{~Intel (Cascade Lake)~} & \textbf{~Tesla P4 (Pascal)~} & \textbf{~Tesla T4 (Turing)~} \\\hline
+	Physical Cores & 28 & 2560 & 2560 \\\hline
+	Max Frequency in MHz & 2700 & 1063 & 1590 \\\hline
+	Peak FLOPS in Giga-FLOPS & 4838 & 5500 & 8100 \\\hline
+  \end{tabular}
+\end{table}

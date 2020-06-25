@@ -1,0 +1,46 @@
+\section{Implementation}
+The program in listing \ref{lst:CUDA_EX} is additionally implemented by OpenCL, in a sequential way and multi-threaded on CPUs using OpenMP.
+Execution time, initialization time and data retrieval time are measured.
+Initialization time is referred to the time needed by the GPU programming models to get ready to execute the kernel function.
+These steps include for instance allocating the device memory and copying of the data.
+Data retrieval time contains the task to move the data back to the host memory and free the device memory.
+The results can be seen in table \ref{tab:time}.
+The programs are run on a system containing an AMD Ryzen 5 1600X Six-Core processor and a GeForce RTX 2070 SUPER as GPU.
+\begin{table}[htbp]
+  \centering
+  \caption{Initialization, Execution and Data Retrieval Time in Milliseconds of Different Implementations}
+  \label{tab:time}
+  \begin{tabular}{|l|c|c|c|}
+	\hline
+	& Initialization Time & Execution Time & Data Retrieval Time \\\hline
+	Sequential & \texttt{-} & \(3441746.58\) & \texttt{-} \\\hline
+	Multi-Threaded & \texttt{-} & \(483712.18\) & \texttt{-} \\\hline
+	OpenCL & \(122612.3\) & \(1286.28\) & \(3730.72\) \\\hline
+	CUDA & \(91303.82\) & \(15.24\) & \(4152.48\) \\\hline
+  \end{tabular}
+\end{table}
+
+
+\begin{figure}[htbp]
+  \begin{center}
+  \begin{subfigure}{0.45\textwidth}
+    \includegraphics[width=\linewidth]{figures/results.png}
+    \caption{ }
+	\label{subfig:a}
+  \end{subfigure}    
+  \begin{subfigure}{0.45\textwidth}
+    \includegraphics[width=\linewidth]{figures/GPUs_Time.png}
+    \caption{ }
+	\label{subfig:b}
+  \end{subfigure}
+    \caption{Initialization, Execution and Data Retrieval Time in Milliseconds of Different Implementations}
+    \label{fig:time}
+  \end{center}
+\end{figure}
+
+Figure \ref{fig:time} illustrates the ratios of time difference well.
+The red parts of each bar shows the execution time needed to execute the matrix multiplication.
+It can be seen that the CPU execution takes much longer than the executions using the GPU programming models --- even the multi-threaded OpenMP version using six threads.
+Furthermore, subfigure \ref{subfig:b} contains only both GPU bars, so that the parts of these can be seen easier.
+It shows that a lot of time is used to prepare the kernel function compared to the actual execution.
+
