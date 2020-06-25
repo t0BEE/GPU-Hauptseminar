@@ -1,10 +1,10 @@
 \section{Conclusion and Discussion}
 Having a growing attention and amount of data in the field of machine learning, general purpose GPUs will become more and more important for these fields.
 It offers huge amounts of parallelizable data which will be processed by these accelerators.
-This paper showed that GPUs work much faster than CPUs do --- even when utilizing multi-threading.
+This paper showed that GPUs can work much faster than CPUs do --- even when utilizing multi-threading.
 However, when programming with GPUs, the overhead of moving data has to be considered.
-Furthermore, during the implementation of the matrix multiplication in CUDA and OpenCL, it came clear that CUDA is a better choice when it comes to GPU programming.
-The lines of code needed to start a kernel function are less.
-This makes the programming less complex.
+Furthermore, during the implementation of the matrix multiplication in CUDA and OpenCL, it came clear that CUDA is a better choice for this example.
+The lines of code needed to start a kernel function in CUDA are less.
+This makes the programming less complex and more convenient compared to OpenCL.
 In OpenCL the programs context has to be defined and the parameters have to be passed one by one to the kernel function.
-Therefore, the initialization time in OpenCL is much more complex and takes longer than in CUDA.
+Therefore, the initialization time in OpenCL takes longer than in CUDA.
