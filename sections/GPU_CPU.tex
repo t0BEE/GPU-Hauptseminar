@@ -88,18 +88,18 @@
   
 \subsection{Performance}
   Finally, we will have a look at the actual numbers of performance of GPU and CPU and we will be able to compare them.
-  Table \ref{tab:comp} shows the number of physical cores, maximum frequency and peak FLOPS of two GPUs and one CPU.
+  Table \ref{tab:comp} shows the number of physical cores, maximum frequency and peak FLOPS in single and double precision of two GPUs and one CPU.
   The example CPU is an Intel Xeon Platinum 8280 utilizing the Cascade Lake architecture.
   The GPUs are a NVIDIA Tesla P4 of Pascal architecture and a NVIDIA Tesla T4 having the new Turing architecture.
-  To calculate the peak performance of a CPU the clock rate has to be multiplied by the number of cores and the number of AVX512 FMA units.
+  To calculate the peak performance of a CPU the clock rate has to be multiplied by the number of cores and the number of AVX512 FMA units per core.
   Then the number of floats fitting into an AVX512 register, which is equal to 16, has to be multiplied by the result.
-  Single precision is used as switching to double precision does not scale as well on GPUs as for CPUs.
+  For double precision the amount of double values fitting into such register has to be taken which is 8.
   Finally, the result has to be multiplied by two, as FMA calculation allows a multiply and an addition per clock.
-  \[2.7 * 28 * 2 * 16 * 2 \approx 4838\]
-  For this equation the optimistic frequency for all cores utilizing AVX instructions are used --- \(2.7\) GHz.\footnote{www.microway.com/knowledge-center-articles/detailed-specifications-of-the-cascade-lake-sp-intel-xeon-processor-scalable-family-cpus (accessed 09.05.2020)}
+  \[2.7 \textrm{\small{ GHz}} * 28 \textrm{\small{ cores}} * 2 \textrm{\small{ AVX512 FMA units}} * 16 \textrm{\small{ values}} * 2 \textrm{\small{ calculations}} \approx 4838 \textrm{\small{ GFLOPS}}\]
+  For this equation the optimistic frequency for all cores utilizing AVX instructions are used --- \(2.7\) GHz \cite{Microway}.\\
   However, this frequency might vary due to thermal issues forcing the CPU to reduce its frequency.
   As the frequency is of scale GHz the result is 4838 GFLOPS.
-  The metrics for the GPUs are retrieved from \cite{NVIDIA.2018}.
+  The metrics for the GPUs are retrieved from \cite{NVIDIA.2018}, \cite{Keny2019} and \cite{GPZOO}.
   
 \begin{table}[htbp]
   \centering
@@ -111,5 +111,9 @@
 	Physical Cores & 28 & 2560 & 2560 \\\hline
 	Max Frequency in MHz & 2700 & 1063 & 1590 \\\hline
 	Peak FLOPS in Giga-FLOPS & 4838 & 5500 & 8100 \\\hline
+	Peak FLOPS double precision & 2419 & 170 & 253 \\\hline
   \end{tabular}
 \end{table}
+
+  It can be seen that GPUs do not scale as well to double precision as CPUs do.
+  They mainly concentrate on single precision and integer computations which has to be kept in mind when utilizing GPUs.
