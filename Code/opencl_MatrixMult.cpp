@@ -30,7 +30,6 @@ char* readKernelFile(const char* filename, long* _size) {
 
 int main(int argc, char* argv[]){
 
-
 	cl_int err;
 	cl_context context = 0;
 	cl_device_id device_id = 0;
@@ -55,7 +54,8 @@ int main(int argc, char* argv[]){
 		host_B[i] = fmod(((float) rand()) * 0.7, 10.0); 
 	}
 
-	auto start_overhead = std::chrono::high_resolution_clock::now();
+	//  ------------------- Allocation -------------------
+	auto start = std::chrono::high_resolution_clock::now();
 
 	// Allocate device memory
 	cl_mem device_A;
@@ -127,7 +127,12 @@ int main(int argc, char* argv[]){
 		return EXIT_FAILURE;
 	}
 
-	// Allocate device memory 
+	auto end = std::chrono::high_resolution_clock::now();
+	auto duration_alloc = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+
+	//  ------------------- Memory Copy -------------------
+	start = std::chrono::high_resolution_clock::now();
+	// Move to device memory 
 	device_A = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, size, host_A, &err);
 	device_B = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, size, host_B, &err);
 	device_C = clCreateBuffer(context, CL_MEM_READ_WRITE, size, host_C, &err);
@@ -138,10 +143,11 @@ int main(int argc, char* argv[]){
 	}
 
 
-	auto end_overhead = std::chrono::high_resolution_clock::now();
-	auto duration_memover = std::chrono::duration_cast<std::chrono::microseconds>(end_overhead-start_overhead);
+	end = std::chrono::high_resolution_clock::now();
+	auto duration_memcpy = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
 
-	auto start = std::chrono::high_resolution_clock::now();
+	//  ------------------- Calculation -------------------
+	start = std::chrono::high_resolution_clock::now();
 	// Launch OpenCL kernel
 	// global: number of work-items executing the function
 	// local: number of work-items making up a work-group
@@ -169,10 +175,12 @@ int main(int argc, char* argv[]){
 		return EXIT_FAILURE;
 	}
 
-	auto end = std::chrono::high_resolution_clock::now();
-	auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end-start);
+	end = std::chrono::high_resolution_clock::now();
+	auto duration_calc = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
 
-	start_overhead = std::chrono::high_resolution_clock::now();
+
+	//  ------------------- Recopy Data -------------------
+	start = std::chrono::high_resolution_clock::now();
 	// Retrieve result from device
 	err = clEnqueueReadBuffer(commands, device_C, CL_TRUE, 0, size, host_C, 0, NULL, NULL);
 
@@ -181,10 +189,10 @@ int main(int argc, char* argv[]){
 		return EXIT_FAILURE;
 	}
 	
-	end_overhead = std::chrono::high_resolution_clock::now();
-        auto dur_free = std::chrono::duration_cast<std::chrono::microseconds>(end_overhead-start_overhead);
+	end = std::chrono::high_resolution_clock::now();
+        auto duration_free = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
 
-        std::cout << duration_memover.count() << "," << duration.count() << "," << dur_free.count() << std::endl;
+	std::cout << duration_alloc.count() << "," << duration_memcpy.count() << "," << duration_calc.count() << "," << duration_free.count() << std::endl;
 
 	if (argc > 1) {
 		std::cerr << "A[0][0]:" << host_A[0] << " , B[0][0]:" << host_B[0] << " ,C[0][0]:" << host_C[0] << std::endl;

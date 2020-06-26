@@ -33,7 +33,6 @@ int main(int argc, char* argv[]){
 	float* host_B = (float*) malloc(size);
 	float* host_C = (float*) malloc(size);
 
-
 	// Fill the host matrices
 	srand(42);
 
@@ -42,8 +41,8 @@ int main(int argc, char* argv[]){
 		host_B[i] = fmod(((float) rand()) * 0.7, 10.0); 
 	}
 
-
-	auto start_overhead = std::chrono::high_resolution_clock::now();
+	//  ------------------- Allocation -------------------
+	auto start = std::chrono::high_resolution_clock::now();
 
 	// Allocate device memory
 	float* device_A;
@@ -52,11 +51,6 @@ int main(int argc, char* argv[]){
 	cudaMalloc(&device_B, size);
 	float* device_C;
 	cudaMalloc(&device_C, size);
-
-	// Move the data to the devcie memory
-	cudaMemcpy(device_A, host_A, size, cudaMemcpyHostToDevice);
-	cudaMemcpy(device_B, host_B, size, cudaMemcpyHostToDevice);
-
 
 	// Declare the number of blocks per grid and the number of threads per block
 	// Only 1024 threads per block are allowed -> 32 * 32
@@ -72,18 +66,31 @@ int main(int argc, char* argv[]){
 		blocksPerGrid.x = blocks;
 		blocksPerGrid.y = blocks;
 	}
-	auto end_overhead = std::chrono::high_resolution_clock::now();
-	auto duration_memover = std::chrono::duration_cast<std::chrono::microseconds>(end_overhead-start_overhead);
+	 
+	auto end = std::chrono::high_resolution_clock::now();
+	auto duration_alloc = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
 
-	auto start = std::chrono::high_resolution_clock::now();
-	// And invoke kernel
+	//  ------------------- Memory Copy -------------------
+	start = std::chrono::high_resolution_clock::now();
+	// Move the data to the devcie memory
+	cudaMemcpy(device_A, host_A, size, cudaMemcpyHostToDevice);
+	cudaMemcpy(device_B, host_B, size, cudaMemcpyHostToDevice);
+
+	end = std::chrono::high_resolution_clock::now();
+	auto duration_memcpy = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+
+
+	//  ------------------- Calculation -------------------
+	start = std::chrono::high_resolution_clock::now();
+	// invoke kernel
 	SqMatrixMul<<<blocksPerGrid,threadsPerBlock>>>(device_A, device_B, device_C, MATRIX_SIZE);
 
-	auto end = std::chrono::high_resolution_clock::now();
-	auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end-start);
+	end = std::chrono::high_resolution_clock::now();
+	auto duration_calc = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
 
 	
-	start_overhead = std::chrono::high_resolution_clock::now();
+	//  ------------------- Recopy Data -------------------
+	start = std::chrono::high_resolution_clock::now();
 	// Copy the results back to the host
 	cudaMemcpy(host_C, device_C, size, cudaMemcpyDeviceToHost);
 
@@ -92,10 +99,10 @@ int main(int argc, char* argv[]){
 	cudaFree(device_B);
 	cudaFree(device_C);
 
-	end_overhead = std::chrono::high_resolution_clock::now();
-	auto dur_free = std::chrono::duration_cast<std::chrono::microseconds>(end_overhead-start_overhead);
+	end = std::chrono::high_resolution_clock::now();
+	auto duration_free = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
 
-	std::cout << duration_memover.count() << "," << duration.count() << "," << dur_free.count() << std::endl;
+	std::cout << duration_alloc.count() << "," << duration_memcpy.count() << "," << duration_calc.count() << "," << duration_free.count() << std::endl;
 
 
 	if (argc > 1) {
