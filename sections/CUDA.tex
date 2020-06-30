@@ -67,34 +67,41 @@
 
 \begin{lstlisting}[style=cpp,caption={Kernel Function of Matrix Multiplication},label={lst:CUDA_EX},numbers=left]
 __global__ void SqMatrixMul(float* A, float* B, float* C, int N) {
-        int ROW = blockIdx.y * blockDim.y + threadIdx.y;
-        int COL = blockIdx.x * blockDim.x + threadIdx.x;
-        float cell_sum = 0.0;
+    int ROW = blockIdx.y * blockDim.y + threadIdx.y;
+    int COL = blockIdx.x * blockDim.x + threadIdx.x;
+    float cell_sum = 0.0;
 
-        if (ROW < N && COL < N) {
-                for(int i = 0; i < N; i++){
-                        cell_sum += A[ROW * N + i] * B[i * N + COL];
-                }
-                C[ROW * N + COL] = cell_sum;
+    if (ROW < N && COL < N) {
+        for(int i = 0; i < N; i++){
+            cell_sum += A[ROW * N + i] * B[i * N + COL];
         }
+        C[ROW * N + COL] = cell_sum;
+    }
 }
 
 int main(int argc, char* argv[]){
-        // Allocate local memory
-        float* host_A = (float*) malloc(size);
-        ...
-        // Allocate device memory
-        float* device_A;
-        cudaMalloc(&device_A, size);
-        ...
-        // Copy data from host to device
-        cudaMemcpy(device_A, host_A, size, cudaMemcpyHostToDevice);
-        // Call kernel function
-        SqMatrixMul<<<blocksPerGrid,threadsPerBlock>>>(...);      
-        // Copy data from device to host
-        cudaMemcpy(host_C, device_C, size, cudaMemcpyDeviceToHost);
-        // Free device memory
-        cudaFree(device_A);
-        ...
+    // Allocate local memory
+    float* host_A = (float*) malloc(size);
+    float* host_B = (float*) malloc(size);
+    float* host_C = (float*) malloc(size);
+    // Allocate device memory
+    float* device_A;
+    cudaMalloc(&device_A, size);
+    float* device_B;
+    cudaMalloc(&device_B, size);
+    float* device_C;
+    cudaMalloc(&device_C, size);
+    // Copy data from host to device
+    cudaMemcpy(device_A, host_A, size, cudaMemcpyHostToDevice);
+    cudaMemcpy(device_B, host_B, size, cudaMemcpyHostToDevice);
+    // Call kernel function
+    SqMatrixMul<<<blocksPerGrid,threadsPerBlock>>>(device_A, device_B,
+		device_C, MATRIX_SIZE);      
+    // Copy data from device to host
+    cudaMemcpy(host_C, device_C, size, cudaMemcpyDeviceToHost);
+    // Free device memory
+    cudaFree(device_A);
+    cudaFree(device_B);
+    cudaFree(device_C);
 }
 \end{lstlisting}
