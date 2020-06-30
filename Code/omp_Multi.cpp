@@ -1,4 +1,4 @@
-#define MATRIX_SIZE 4096
+#define MATRIX_SIZE 2048
 
 #include <iostream>
 #include <stdlib.h>

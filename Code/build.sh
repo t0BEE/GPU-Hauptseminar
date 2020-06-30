@@ -11,14 +11,18 @@ echo "initTime,execTime,retrieveTime" > results_omp.csv
 echo "initTime,cpyTime,execTime,retrieveTime" > results_cuda.csv
 echo "initTime,cpyTime,execTime,retrieveTime" > results_ocl.csv
 
-runs=100
+runs=50
 
 for i in $(seq 1 ${runs})
 do
   echo "-- Run ${i}/${runs} --"
+  echo "- CUDA"
   ./a.out >> results_cuda.csv
+  echo "- Seq"
   ./seq.out >> results_seq.csv
+  echo "- OpenCL"
   ./ocl.out >> results_ocl.csv
+  echo "- OpenMP"
   ./parallel.out >> results_omp.csv
 done
 
