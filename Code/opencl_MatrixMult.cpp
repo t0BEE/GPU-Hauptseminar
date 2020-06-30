@@ -1,4 +1,4 @@
-#define MATRIX_SIZE 2048
+#define MATRIX_SIZE 1024
 
 #include <iostream>
 #include <stdlib.h>
@@ -175,6 +175,7 @@ int main(int argc, char* argv[]){
 		return EXIT_FAILURE;
 	}
 
+	clFinish(commands); // wait for the kernel to finish
 	end = std::chrono::high_resolution_clock::now();
 	auto duration_calc = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
 

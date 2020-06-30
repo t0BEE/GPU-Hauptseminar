@@ -4,19 +4,19 @@ Execution time, initialization time and data retrieval time are measured.
 Initialization time is referred to the time needed by the GPU programming models to get ready to execute the kernel function.
 These steps include for instance allocating the device memory and copying of the data.
 Data retrieval time contains the task to move the data back to the host memory and free the device memory.
-The sizes of the matrices used in the execution are 2048 times 2048 and the mean times of 50 runs can be seen in table \ref{tab:time}.
+The sizes of the matrices used in the execution are 1024 times 1024 and the mean times of 50 runs can be seen in table \ref{tab:time}.
 The programs are run on a system containing an AMD Ryzen 5 1600X Six-Core processor and a GeForce RTX 2070 SUPER as GPU.
 \begin{table}[htbp]
   \centering
   \caption{Initialization, Execution and Data Retrieval Time in Milliseconds of Different Implementations}
   \label{tab:time}
-  \begin{tabular}{|l|c|c|c|}
+  \begin{tabular}{|l|c|c|c|c|}
 	\hline
-	& Initialization Time & Execution Time & Data Retrieval Time \\\hline
-	Sequential & \texttt{-} & \(3441746.58\) & \texttt{-} \\\hline
-	Multi-Threaded & \texttt{-} & \(483712.18\) & \texttt{-} \\\hline
-	OpenCL & \(122612.3\) & \(1286.28\) & \(3730.72\) \\\hline
-	CUDA & \(91303.82\) & \(15.24\) & \(4152.48\) \\\hline
+	  & Initialization Time & Copy Time & Execution Time & Data Retrieval Time \\\hline
+	  Sequential & \texttt{-} & \texttt{-} & \(3402937.74\) & \texttt{-} \\\hline
+	  Multi-Threaded & \texttt{-}& \texttt{-} & \(1126239.8\) & \texttt{-} \\\hline
+	  OpenCL & \(118941.2\) & \(2072.88\) & \(3770.14\) & \(1297.68\) \\\hline
+	  CUDA & \(94490.16\) & \(919.16\) & \(2591.44\) & \(1679.56\) \\\hline
   \end{tabular}
 \end{table}
 
