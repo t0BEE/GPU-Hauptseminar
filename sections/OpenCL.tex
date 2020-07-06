@@ -30,7 +30,7 @@
   Additionally it introduces new objects, e.g. \texttt{cl\_mem} which is used for device memory.
     
   Furthermore, in OpenCL kernel functions are not defined in the main file.
-  They are defined in additional files which are read line by line and created by \texttt{clCreateProgramWithSource()}.
+  They are defined in additional files which are read line by line and created by the function \texttt{clCreateProgramWithSource()}.
   The output is then built by \texttt{clBuildProgram()}.
   Another difference which makes a OpenCL program more complex than it's CUDA counterpart, is that OpenCL has to create the context defining the device information.
   Additionally, each parameter of a kernel function has to be passed one by one via \texttt{clSetKernelArg()} and the kernel call has to be queued in the command queue of the device.

@@ -4,14 +4,15 @@
   It shows that the amounts of cores differ significantly.
   In the figure they are labeled by ALU and displayed in green.
   However, the size of cache memory each processing unit can use individually is bigger on a CPU.
+  It can also be seen that both architectures make use of a global memory shared among all cores, labeled here as \textit{DRAM}
   \bildbreite{figures/CPU_GPU_Arc.JPG}{11cm}{fig:GPU_CPU_Arc}{Differences Between CPU and GPU Architecture~\cite{NVIDIA.2019}}{}
   
   
 \subsection{GPU Architecture}
 \label{subsec:GPU_Arc}
-  A GPU has several multi-threaded single instruction multiple data (SIMD) processors.
+  A GPU has several multi-threaded processors.
   In an NVIDIA architecture they are called \textit{Streaming Multiprocessors (SM)}.
-  Each of them has multiple processing units for integer and floating point operations. ~\cite{Rauber.2012}
+  Each of them has multiple processing units for integer and floating point operations.~\cite{Rauber.2012}
 
   The newest GPU architecture from NVIDIA is the \textit{Turing} architecture and can be seen in figure \ref{fig:turingOverall}.
   The example layout \textit{TU106} of a NVIDIA RTX2070 GPU has three Graphic Processing Clusters (GPC), 18 Texture Processing Clusters (TPC) and 36 SMs.~\cite{NVIDIA.2018}
@@ -24,17 +25,17 @@
   SMs are grouped in pairs and each group is assigned to one TPC.~\cite{Lindholm.2008}~\cite{NVIDIA.2018}
     
   A SM contains four identical blocks.
-  Each of them contains 16 integer cores for integer calculations, 16 floating point cores for decimal computation and two Tensor cores to accelerate deep learning.
-  It is a special core speeding up a matrix-accumulation function which is an essential part of deep learning model calculation.
+  Each of them contains 16 integer cores for integer calculations, 16 floating point cores for decimal computation. %and two Tensor cores to accelerate deep learning.
+  %It is a special core speeding up a matrix-accumulation function which is an essential part of deep learning model calculation.
   Additionally, each block has its own warp scheduler and dispatch unit for job preparation.
   Inside a block an instruction cache and a register file are placed which are shared among all units inside a block.
   Furthermore, all blocks can access a data cache together which allows data movement across the blocks.
   Figure \ref{fig:smArch} shows the architecture of a SM in detail including all blocks and cores.~\cite{Burgess.2020}~\cite{NVIDIA.2018}
 	  \bildbreite{figures/SM_arch.jpg}{13cm}{fig:smArch}{8 SM Architecture}{}
 
-  The figure additionally shows, that a SM has a newly added feature --- the \textit{RTCore}.
-  It accelerates ray tracing computation which is used in video game and graphics programming.
-  The ray probing task is moved to this function unit and the SM's cores are free to do other tasks in the meanwhile.
+  %The figure additionally shows, that a SM has a newly added feature --- the \textit{RTCore}.
+  %It accelerates ray tracing computation which is used in video game and graphics programming.
+  %The ray probing task is moved to this function unit and the SM's cores are free to do other tasks in the meanwhile.
   
  Another important thing to mention is memory hierarchy.
  Figure \ref{fig:turingOverall} and \ref{fig:smArch} not only show the processing units inside a GPU.
@@ -52,7 +53,7 @@
         
 
 
-\subsection{Thread Scheduling}
+\subsection{Warp Scheduling}
 \label{subsec:Thr}
   In contrast to CPUs, GPUs do not schedule threads individually.
   Instead, they are scheduled in groups --- so called \textit{warps}.
@@ -74,23 +75,31 @@
   To schedule a warp of threads the scheduler prioritizes all warps which are ready to be processed in a scoreboard.
   The warp with the highest priority will be scheduled next and processed.
   The priority score considers, e.g. instruction type and "fairness" to all warps.
-  There is also the possibility to explicitly synchronize threads by barriers.~\cite{Lindholm.2008}
+  However, there is also the possibility to explicitly synchronize threads by barriers.~\cite{Lindholm.2008}
 
          
 \subsection{Latency Hiding}
-  GPUs can use the thread scheduling methods introduced in subsection \ref{subsec:Thr} to hide the long memory access latency.
-  Especially, for the highest level of memory as introduced in subsection \ref{subsec:GPU_Arc}.
-  Switching between threads and avoiding stall compute cycles, allows to maximize processor utilization.
-  In case a warp wants to access the memory, it calls such a function and goes into idle state.
-  The scheduler has the chance now to switch to another ready thread from his scoreboard which will be computed then.
-  Therefore, GPUs hide memory access latency by computation instead of caches, e.g. used by CPUs.~\cite{volkov.2016}~\cite{Rauber.2012}~\cite{NVIDIA.2019}
+  GPUs can use the warp scheduling methods introduced in subsection \ref{subsec:Thr} to hide the long memory access latency.
+  Which may especially be the case for the highest level of memory introduced in subsection \ref{subsec:GPU_Arc}.
+  Switching between warps and avoiding stall compute cycles, allows to maximize resource utilization.
+  This maximum utilization is capped by the \textit{theoretical occupancy}, which is the uppermost limit of warps that can be managed by an SM's warp scheduler simultaneously.~\cite{NInsight}
+  
+  The actual number of warps currently handled in an SM is called \textit{active warps} and may vary.
+  These active warps can have one of two states being \textit{stall} or \textit{eligible}.
+  An eligible warp is ready to be executed.
+  The scheduler may switch to it and it becomes a selected warp which may continue its work.
+  A stall warp has a condition denying it to continue its work, for example it waits for load/store operations to finish, waits for other computation results or it ran into a scheduling barrier.
+  \cite{NInsight} shows how often the different reasons for a warp to be stall occur.~\cite{NVIDIA.2019}~\cite{volkov.2016}
+
+  It can be seen that a GPU does not try to hide latency such as memory access by caches like a CPU does.
+  A GPU tries to execute other warps during this time to come as close to the theoretical occupancy as possible.~\cite{Rauber.2012}
   
   
 \subsection{Performance}
   Finally, we will have a look at the actual numbers of performance of GPU and CPU and we will be able to compare them.
   Table \ref{tab:comp} shows the number of physical cores, maximum frequency and peak FLOPS in single and double precision of two GPUs and one CPU.
   The example CPU is an Intel Xeon Platinum 8280 utilizing the Cascade Lake architecture.
-  The GPUs are a NVIDIA Tesla P4 of Pascal architecture and a NVIDIA Tesla T4 having the new Turing architecture.
+  The GPUs are an NVIDIA Tesla P4 of Pascal architecture, an NVIDIA Tesla T4 having the new Turing architecture and an NVIDIA V100 of Volta architecture.
   To calculate the peak performance of a CPU the clock rate has to be multiplied by the number of cores and the number of AVX512 FMA units per core.
   Then the number of floats fitting into an AVX512 register, which is equal to 16, has to be multiplied by the result.
   For double precision the amount of double values fitting into such register has to be taken which is 8.
@@ -99,23 +108,23 @@
   For this equation the optimistic frequency for all cores utilizing AVX instructions are used --- \(2.7\) GHz \cite{Microway}.\\
   However, this frequency might vary due to thermal issues forcing the CPU to reduce its frequency.
   As the frequency is of scale GHz the result is 4838 GFLOPS.
-  The metrics for the GPUs are retrieved from \cite{NVIDIA.2018}, \cite{Keny2019} and \cite{GPZOO}.
+  The metrics for the GPUs are retrieved from \cite{NVIDIA.2018}, \cite{Keny2019}, \cite{V100} and \cite{GPZOO}.
   
 \begin{table}[htbp]
   \centering
   \caption{Metric Comparison Intel Cascade Lake and NVIDIA Turing TU106}
   \label{tab:comp}
-  \begin{tabular}{|l|c|c|c|}
+  \begin{tabular}{|p{5cm}|P{2.6cm}|P{2cm}|P{2cm}|P{2cm}|}
     \hline
-	\textbf{Metric} & \textbf{~Intel (Cascade Lake)~} & \textbf{~Tesla P4 (Pascal)~} & \textbf{~Tesla T4 (Turing)~} \\\hline
-	Physical Cores & 28 & 2560 & 2560 \\\hline
-	Max Frequency in MHz & 2700 & 1063 & 1590 \\\hline
-	Peak FLOPS in Giga-FLOPS & 4838 & 5500 & 8100 \\\hline
-	Peak FLOPS double precision & 2419 & 170 & 253 \\\hline
+	\textbf{Metric} & \textbf{~~~Intel\newline(Cascade Lake)} & \textbf{~Tesla P4\newline(Pascal)} & \textbf{~Tesla T4\newline(Turing)} & \textbf{~~V100\newline(Volta)}\\\hline
+	Physical Cores & 28 & 2560 & 2560 & 5120\\\hline
+	Max Frequency in MHz & 2700 & 1063 & 1590 & 1380\\\hline
+	Peak FLOPS in Giga-FLOPS & 4838 & 5500 & 8100 & 14130\\\hline
+	Peak FLOPS double precision & 2419 & 170 & 253 & 7066\\\hline
   \end{tabular}
 \end{table}
 
-  It can be seen that GPUs do not scale as well to double precision as CPUs do.
+  It can be seen that these GPUs do not scale as well to double precision as CPUs do.
   They mainly concentrate on single precision and integer computations which has to be kept in mind when utilizing GPUs.
 
   \vspace{0.5cm}

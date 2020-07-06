@@ -28,6 +28,7 @@
 %\newtheorem{definition}{Definition}
 \usepackage{doc}
 
+\usepackage{array}
 \usepackage{subcaption}
 
 % Seitenformat ===============================================================
@@ -98,6 +99,7 @@
   \end{figure}
 }
 
+\newcolumntype{P}[1]{>{\centering\arraybackslash}p{#1}}
 
 % ============================================================================
 \begin{document}
@@ -127,7 +129,7 @@ This is due to the fact that they are specialized for parallel work and machine 
 This paper introduces GPUs and explains how these devices provide more compute power than CPUs do.
 Their architecture is shown and the two most popular programming models are introduces --- CUDA and OpenCL.
 Differences of both are discussed and an example execution helps to evaluate advantages and disadvantages of both programming models.
-The results show that CUDA is the more convenient choice for programmers due to simpler initialization and executes the matrix multiplication faster.
+The results show that CUDA is the more convenient choice for programmers due to simpler initialization and less necessary programming effort.
 \end{abstract}
 
 
