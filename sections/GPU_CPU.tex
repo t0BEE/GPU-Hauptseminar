@@ -1,11 +1,11 @@
 \section{Difference between CPU and GPU} 
-  The GPU's high amount of compute power is achieved by devoting more transistors to data processing than caching and flow control compared to a CPU.~\cite{NVIDIA.2019}
+  The GPU's high amount of compute power is achieved by devoting more transistors to data processing than caching and flow control compared to a CPU.
   Figure \ref{fig:GPU_CPU_Arc} well illustrates the architectural difference between both in a less detailed way.
   It shows that the amounts of cores differ significantly.
   In the figure they are labeled by ALU and displayed in green.
   However, the size of cache memory each processing unit can use individually is bigger on a CPU.
-  It can also be seen that both architectures make use of a global memory shared among all cores, labeled here as \textit{DRAM}
-  \bildbreite{figures/CPU_GPU_Arc.JPG}{11cm}{fig:GPU_CPU_Arc}{Differences Between CPU and GPU Architecture~\cite{NVIDIA.2019}}{}
+  It can also be seen that both architectures make use of a global memory shared among all cores, labeled here as \textit{DRAM}.~\cite{NVIDIA.2019}
+  \bildbreite{figures/CPU_GPU_Arc.JPG}{10cm}{fig:GPU_CPU_Arc}{Differences Between CPU and GPU Architecture~\cite{NVIDIA.2019}}{}
   
   
 \subsection{GPU Architecture}
@@ -16,7 +16,7 @@
 
   The newest GPU architecture from NVIDIA is the \textit{Turing} architecture and can be seen in figure \ref{fig:turingOverall}.
   The example layout \textit{TU106} of a NVIDIA RTX2070 GPU has three Graphic Processing Clusters (GPC), 18 Texture Processing Clusters (TPC) and 36 SMs.~\cite{NVIDIA.2018}
-  	  \bildbreite{figures/Turing_architecture.JPG}{\textwidth}{fig:turingOverall}{8 Turing Architecture TU106 (RTX2070)}{}
+  	  \bildbreite{figures/Turing_architecture.JPG}{13cm}{fig:turingOverall}{ Turing Architecture TU106 (RTX2070)~\cite{NVIDIA.2018}}{}
   	  
   GPCs are self-contained units designed for scalability.
   Creating a new architecture with more processing units can be achieved by adding GPCs.
@@ -31,7 +31,7 @@
   Inside a block an instruction cache and a register file are placed which are shared among all units inside a block.
   Furthermore, all blocks can access a data cache together which allows data movement across the blocks.
   Figure \ref{fig:smArch} shows the architecture of a SM in detail including all blocks and cores.~\cite{Burgess.2020}~\cite{NVIDIA.2018}
-	  \bildbreite{figures/SM_arch.jpg}{13cm}{fig:smArch}{8 SM Architecture}{}
+	  \bildbreite{figures/SM_arch.jpg}{11cm}{fig:smArch}{SM Architecture~\cite{NVIDIA.2018}}{}
 
   %The figure additionally shows, that a SM has a newly added feature --- the \textit{RTCore}.
   %It accelerates ray tracing computation which is used in video game and graphics programming.
@@ -80,16 +80,25 @@
          
 \subsection{Latency Hiding}
   GPUs can use the warp scheduling methods introduced in subsection \ref{subsec:Thr} to hide the long memory access latency.
-  Which may especially be the case for the highest level of memory introduced in subsection \ref{subsec:GPU_Arc}.
   Switching between warps and avoiding stall compute cycles, allows to maximize resource utilization.
-  This maximum utilization is capped by the \textit{theoretical occupancy}, which is the uppermost limit of warps that can be managed by an SM's warp scheduler simultaneously.~\cite{NInsight}
+  This maximum utilization is capped by the \textit{theoretical occupancy}, which is the uppermost limit of warps that can execute on an SM concurrently.
+  It is the product of the accessible blocks and the number of warps per block.~\cite{NInsight}
   
-  The actual number of warps currently handled in an SM is called \textit{active warps} and may vary.
+  The actual number of warps currently handled in an SM is called \textit{active warps} and may vary during run time.
   These active warps can have one of two states being \textit{stall} or \textit{eligible}.
   An eligible warp is ready to be executed.
   The scheduler may switch to it and it becomes a selected warp which may continue its work.
   A stall warp has a condition denying it to continue its work, for example it waits for load/store operations to finish, waits for other computation results or it ran into a scheduling barrier.
-  \cite{NInsight} shows how often the different reasons for a warp to be stall occur.~\cite{NVIDIA.2019}~\cite{volkov.2016}
+  \cite{NInsight} shows how often the different reasons for a warp to result in stall occur.~\cite{NVIDIA.2019}~\cite{volkov.2016}
+
+  The ratio of active warps to the maximum number of possible active warps is called \textit{occupancy}.
+  Having a high occupancy increases the chance of eligible warps which can be scheduled to avoid stall instruction cycles.
+  This can be achieved either by increasing the number of CUDA blocks in each dimension when defining the grids or by changing the CUDA block size so that more CUDA blocks fit on each SM.
+  This will be covered later in section \ref{sec:CUDA}.
+  Important to know is that the architecture of a GPU has multiple registers which are separated among the blocks.
+  This allows the scheduler to switch between warps with a small amount of effort as the registers do not need to be loaded with a different context.
+  The more registers are used per warp, the fewer warps can be active per block.
+  Therefore, keeping in mind the register usage of a program might play a significant role in performance optimization.~\cite{NInsight2}
 
   It can be seen that a GPU does not try to hide latency such as memory access by caches like a CPU does.
   A GPU tries to execute other warps during this time to come as close to the theoretical occupancy as possible.~\cite{Rauber.2012}
